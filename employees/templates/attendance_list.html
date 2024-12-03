@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+    <div class="max-w-6xl mx-auto p-6">
+        <div class="bg-white shadow-md rounded-lg p-8">
+            <h1 class="text-3xl font-semibold text-gray-800 mb-6">Attendance Records</h1>
+            <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+                <thead>
+                    <tr class="text-left bg-gray-100 text-gray-700">
+                        <th class="py-2 px-4 border-b">Employee</th>
+                        <th class="py-2 px-4 border-b">Date</th>
+                        <th class="py-2 px-4 border-b">Status</th>
+                        <th class="py-2 px-4 border-b">Department</th>
+                        <th class="py-2 px-4 border-b">Action</th>  <!-- New column for action -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attendance in attendances %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-2 px-4 border-b text-gray-800">{{ attendance.employee.first_name }}</td>
+                        <td class="py-2 px-4 border-b text-gray-800">{{ attendance.date }}</td>
+                        <td class="py-2 px-4 border-b text-gray-800">{{ attendance.status }}</td>
+                        <td class="py-2 px-4 border-b text-gray-800">{{ attendance.department }}</td>
+                        <td class="py-2 px-4 border-b text-gray-800">
+                            <form action="{% url 'delete_attendance' attendance.id %}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" class="bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="mt-6 text-right">
+                <a href="{% url 'add_attendance' %}" class="inline-block bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600">Add Attendance</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
