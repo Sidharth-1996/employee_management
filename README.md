@@ -105,16 +105,12 @@ Contributions are welcome! Please follow these steps:
    ```
 4. Push to your fork and submit a pull request.
 
-## License
-
-This project is licensed under the MIT License. See the `LICENSE` file for details.
-
 ## Contact
 
 If you have any questions or suggestions, feel free to reach out:
 
 - **Email**: [sharmasidharth784@gmail.com](mailto\:sharmasidharth784@gmail.com)
-- **GitHub**: Sidharth-1996
+- **GitHub**: [Sidharth-1996](https://github.com/Sidharth-1996)
 
 ---
 
