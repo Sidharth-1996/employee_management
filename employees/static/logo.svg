@@ -1,0 +1,55 @@
+<svg width="200" height="60" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Vertical Blue to Purple Gradient for Right Pill -->
+    <linearGradient id="rightPillGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#818cf8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a78bfa;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Enhanced Shadow Filter -->
+    <filter id="logoShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.5"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Two Pill-Shaped Forms -->
+  <g id="symbol" transform="translate(10, 8)">
+    <!-- Left Pill - Solid Darker Blue: Straight left edge, curved right edge, rounded top/bottom -->
+    <path d="M 0 5 
+             L 0 0 
+             L 20 0 
+             A 5 5 0 0 1 25 5 
+             L 25 45 
+             A 5 5 0 0 1 20 50 
+             L 0 50 
+             Z" 
+          fill="#1e40af" 
+          filter="url(#logoShadow)"/>
+    
+    <!-- Right Pill - Blue to Purple Vertical Gradient: Curved left edge, straight right edge, rounded top/bottom -->
+    <path d="M 20 0 
+             A 5 5 0 0 1 25 5 
+             L 25 45 
+             A 5 5 0 0 1 20 50 
+             L 45 50 
+             L 45 0 
+             Z" 
+          fill="url(#rightPillGradient)"
+          filter="url(#logoShadow)"/>
+  </g>
+  
+  <!-- StaffSync Text with Improved Typography -->
+  <g id="text" transform="translate(60, 5)">
+    <text x="0" y="22" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="900" fill="#0f172a" letter-spacing="-0.3px">Staff</text>
+    <text x="0" y="45" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="900" fill="url(#rightPillGradient)" letter-spacing="-0.3px">Sync</text>
+  </g>
+</svg>

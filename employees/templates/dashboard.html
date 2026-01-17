@@ -1,0 +1,328 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - StaffSync</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'logo-icon.svg' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'admin.css' %}">
+    <script src="{% static 'toast.js' %}"></script>
+    <script src="{% static 'sidebar.js' %}"></script>
+    <script src="{% static 'loading.js' %}"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="fade-in">
+    <!-- Mobile Menu Button -->
+    <button onclick="toggleSidebar()" class="mobile-menu-btn lg:hidden" aria-label="Toggle menu">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+
+    <!-- Sidebar Overlay (Mobile Only) -->
+    <div id="sidebarOverlay" class="hidden lg:hidden" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar Navigation (Mobile Only) -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <div class="sidebar-header">
+                <a href="{% url 'dashboard' %}" class="sidebar-logo">
+                    <img src="{% static 'logo.svg' %}" alt="StaffSync Logo" class="h-8">
+                </a>
+                <div class="mt-4 text-sm text-gray-400">
+                    <p class="font-medium">Welcome back,</p>
+                    <p class="font-bold text-white text-base">{{ user.username }}</p>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{% url 'dashboard' %}" class="sidebar-link active">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'employee_list' %}" class="sidebar-link">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    <span>Employees</span>
+                </a>
+                <a href="{% url 'attendance_list' %}" class="sidebar-link">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span>Attendance Records</span>
+                </a>
+                <a href="{% url 'mark_attendance' %}" class="sidebar-link">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                    </svg>
+                    <span>Mark Attendance</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar-footer">
+            <a href="{% url 'logout' %}" class="sidebar-link text-red-300 hover:text-red-100 hover:bg-red-900/20">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Desktop Header -->
+    <header class="admin-header sticky top-0 z-30 hidden lg:block py-4 px-6">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-6">
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'dashboard' %}" class="flex items-center space-x-2">
+                        <img src="{% static 'logo.svg' %}" alt="StaffSync Logo" class="h-8 md:h-10">
+                    </a>
+                    <div class="hidden md:block border-l-2 border-gray-300 pl-5">
+                        <h2 class="text-sm font-bold text-gray-700">Welcome back,</h2>
+                        <p class="text-base font-extrabold text-gray-900">{{ user.username }}</p>
+                    </div>
+                </div>
+                <nav class="hidden lg:flex items-center space-x-1">
+                    <a href="{% url 'dashboard' %}" class="px-4 py-2 text-sm font-bold text-blue-600 bg-blue-50 rounded-lg transition-all duration-200">📊 Dashboard</a>
+                    <a href="{% url 'employee_list' %}" class="px-4 py-2 text-sm font-semibold text-gray-800 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">👥 Employees</a>
+                    <a href="{% url 'attendance_list' %}" class="px-4 py-2 text-sm font-semibold text-gray-800 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">📋 Attendance</a>
+                    <a href="{% url 'mark_attendance' %}" class="px-4 py-2 text-sm font-semibold text-gray-800 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">✅ Mark Attendance</a>
+                </nav>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'logout' %}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-red-600 rounded-lg hover:from-red-600 hover:to-red-700 shadow-md hover:shadow-lg transition-all duration-200">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    Logout
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-8">
+        <!-- Page Header -->
+        <div class="mb-10">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-3 tracking-tight">Dashboard</h1>
+            <p class="text-base md:text-lg text-gray-700 font-semibold">Overview of your organization's attendance and employee data</p>
+        </div>
+
+        <!-- Key Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Employees -->
+            <div class="stat-card">
+                <div class="stat-card-icon bg-gradient-to-br from-blue-400 to-blue-600">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                </div>
+                <div class="stat-value text-gray-900">{{ total_employees }}</div>
+                <div class="stat-label">Total Employees</div>
+            </div>
+
+            <!-- Today Present -->
+            <div class="stat-card">
+                <div class="stat-card-icon bg-gradient-to-br from-green-400 to-green-600">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="stat-value text-green-600">{{ today_present }}</div>
+                <div class="stat-label">Present Today</div>
+                    <div class="stat-change text-green-700 font-bold text-sm mt-2">
+                    <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    {{ today_percentage }}% attendance rate
+                </div>
+            </div>
+
+            <!-- Today Absent -->
+            <div class="stat-card">
+                <div class="stat-card-icon bg-gradient-to-br from-red-400 to-red-600">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="stat-value text-red-600">{{ today_absent }}</div>
+                <div class="stat-label">Absent Today</div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="stat-card">
+                <div class="stat-card-icon bg-gradient-to-br from-purple-400 to-purple-600">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="stat-value text-purple-600">{{ recent_attendance_count }}</div>
+                <div class="stat-label">Records This Week</div>
+            </div>
+        </div>
+
+        <!-- Charts and Details Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Today's Summary Card -->
+            <div class="lg:col-span-2 card p-6 md:p-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6 tracking-tight">Today's Attendance Summary</h2>
+                {% if today_total > 0 %}
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-base font-bold text-gray-900">Attendance Rate</span>
+                            <span class="text-xl font-black text-blue-600">{{ today_percentage }}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ today_percentage }}%"></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-5 pt-6 border-t-2 border-gray-200">
+                        <div class="text-center p-5 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border-2 border-green-200 shadow-sm hover:shadow-md transition-shadow duration-300">
+                            <div class="text-3xl md:text-4xl font-extrabold text-green-700 mb-1">{{ today_present }}</div>
+                            <div class="text-base font-bold text-gray-900 uppercase tracking-wide">Present</div>
+                        </div>
+                        <div class="text-center p-5 bg-gradient-to-br from-red-50 to-red-100 rounded-xl border-2 border-red-200 shadow-sm hover:shadow-md transition-shadow duration-300">
+                            <div class="text-3xl md:text-4xl font-black text-red-700 mb-1">{{ today_absent }}</div>
+                            <div class="text-base font-bold text-gray-900 uppercase tracking-wide">Absent</div>
+                        </div>
+                    </div>
+                    <div class="pt-4">
+                        <a href="{% url 'mark_attendance' %}?date={{ today|date:'Y-m-d' }}" class="inline-flex items-center w-full justify-center px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Mark Today's Attendance
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-8">
+                    <p class="text-gray-600 mb-6 font-semibold text-lg">No attendance recorded for today yet.</p>
+                    <a href="{% url 'mark_attendance' %}?date={{ today|date:'Y-m-d' }}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                        Mark Attendance Now
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Department Breakdown -->
+            <div class="card p-6 md:p-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6 tracking-tight">Departments</h2>
+                <div class="space-y-3">
+                    {% for dept in department_stats %}
+                    <div class="p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-300">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-extrabold text-gray-900 text-lg">{{ dept.name }}</span>
+                            <span class="text-sm font-bold text-gray-900 bg-white px-3 py-1.5 rounded-md shadow-sm">{{ dept.employee_count }} employees</span>
+                        </div>
+                        <div class="text-base text-green-800 font-extrabold">
+                            <span class="inline-flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                                {{ dept.today_present }} present today
+                            </span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-base text-gray-700 font-semibold text-center py-4">No departments yet</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Attendance Trend -->
+        <div class="card p-6 md:p-8">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Weekly Attendance Trend</h2>
+                <a href="{% url 'attendance_list' %}" class="text-base text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200 hover:underline">View All Records →</a>
+            </div>
+            <div class="overflow-x-auto">
+                <div class="flex gap-4 min-w-max">
+                    {% for day in week_attendance %}
+                    <div class="flex flex-col items-center min-w-[90px] group">
+                        <div class="text-base font-bold text-gray-900 mb-2">{{ day.date|date:"D" }}</div>
+                        <div class="text-sm font-semibold text-gray-700 mb-4">{{ day.date|date:"M j" }}</div>
+                        <div class="w-full bg-gray-200 rounded-lg h-32 flex flex-col justify-end relative overflow-hidden">
+                            {% if day.total > 0 %}
+                            <div class="w-full bg-green-500 transition-all duration-300" style="height: {% widthratio day.present day.total 100 %}%">
+                                <div class="absolute bottom-0 w-full bg-red-500" style="height: {% widthratio day.absent day.total 100 %}%"></div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="mt-3 text-center">
+                            <div class="text-lg font-extrabold text-gray-900 mb-2">{{ day.total }}</div>
+                            <div class="flex gap-2 text-sm font-bold">
+                                <span class="text-green-800 bg-green-100 px-3 py-1.5 rounded-md shadow-sm">{{ day.present }}P</span>
+                                <span class="text-red-800 bg-red-100 px-3 py-1.5 rounded-md shadow-sm">{{ day.absent }}A</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+            <a href="{% url 'employee_list' %}" class="card p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-gray-900 mb-2 text-lg">Manage Employees</h3>
+                        <p class="text-sm text-gray-800 font-semibold">View and manage your team</p>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{% url 'mark_attendance' %}" class="card p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-gray-900 mb-2 text-lg">Mark Attendance</h3>
+                        <p class="text-sm text-gray-800 font-semibold">Record employee presence</p>
+                    </div>
+                </div>
+            </a>
+
+            <a href="{% url 'attendance_list' %}" class="card p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-extrabold text-gray-900 mb-2 text-lg">View Records</h3>
+                        <p class="text-sm text-gray-800 font-semibold">Browse attendance history</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </main>
+
+    <!-- Toast Container (hidden by default) -->
+    <div id="toastContainer" class="toast-container"></div>
+</body>
+</html>
+

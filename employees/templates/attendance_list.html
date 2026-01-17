@@ -1,46 +1,1728 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance List</title>
+    <title>Attendance Records - StaffSync</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'logo-icon.svg' %}">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'admin.css' %}">
+    <script src="{% static 'toast.js' %}"></script>
+    <script src="{% static 'sidebar.js' %}"></script>
+    <script src="{% static 'loading.js' %}"></script>
+    <script src="{% static 'date-picker.js' %}"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans leading-normal tracking-normal">
-    <div class="max-w-6xl mx-auto p-6">
-        <div class="bg-white shadow-md rounded-lg p-8">
-            <h1 class="text-3xl font-semibold text-gray-800 mb-6">Attendance Records</h1>
-            <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
-                <thead>
-                    <tr class="text-left bg-gray-100 text-gray-700">
-                        <th class="py-2 px-4 border-b">Employee</th>
-                        <th class="py-2 px-4 border-b">Date</th>
-                        <th class="py-2 px-4 border-b">Status</th>
-                        <th class="py-2 px-4 border-b">Department</th>
-                        <th class="py-2 px-4 border-b">Action</th>  <!-- New column for action -->
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for attendance in attendances %}
-                    <tr class="hover:bg-gray-50">
-                        <td class="py-2 px-4 border-b text-gray-800">{{ attendance.employee.first_name }}</td>
-                        <td class="py-2 px-4 border-b text-gray-800">{{ attendance.date }}</td>
-                        <td class="py-2 px-4 border-b text-gray-800">{{ attendance.status }}</td>
-                        <td class="py-2 px-4 border-b text-gray-800">{{ attendance.department }}</td>
-                        <td class="py-2 px-4 border-b text-gray-800">
-                            <form action="{% url 'delete_attendance' attendance.id %}" method="POST">
-                                {% csrf_token %}
-                                <button type="submit" class="bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <div class="mt-6 text-right">
-                <a href="{% url 'add_attendance' %}" class="inline-block bg-blue-500 text-white py-2 px-4 rounded-lg shadow hover:bg-blue-600">Add Attendance</a>
+<body class="fade-in">
+    <!-- Mobile Menu Button -->
+    <button onclick="toggleSidebar()" class="mobile-menu-btn lg:hidden" aria-label="Toggle menu">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+
+    <!-- Sidebar Overlay (Mobile Only) -->
+    <div id="sidebarOverlay" class="hidden lg:hidden" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <div class="sidebar-header">
+                <a href="{% url 'dashboard' %}" class="sidebar-logo">
+                    <img src="{% static 'logo.svg' %}" alt="StaffSync Logo" class="h-8">
+                </a>
+                <div class="mt-4 text-sm text-gray-400">
+                    <p class="font-medium">Welcome back,</p>
+                    <p class="font-bold text-white text-base">{{ user.username }}</p>
+                </div>
             </div>
+
+            <nav class="sidebar-nav">
+                <a href="{% url 'dashboard' %}" class="sidebar-link">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'employee_list' %}" class="sidebar-link">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    <span>Employees</span>
+                </a>
+                <a href="{% url 'attendance_list' %}" class="sidebar-link active">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span>Attendance Records</span>
+                </a>
+                <a href="{% url 'mark_attendance' %}" class="sidebar-link">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                    </svg>
+                    <span>Mark Attendance</span>
+                </a>
+            </nav>
+                </div>
+
+        <div class="sidebar-footer">
+            <a href="{% url 'logout' %}" class="sidebar-link text-red-300 hover:text-red-100 hover:bg-red-900/20">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                <span>Logout</span>
+            </a>
+                            </div>
+    </aside>
+
+    <!-- Desktop Header -->
+    <header class="admin-header sticky top-0 z-30 hidden lg:block py-4 px-6">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-6">
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'dashboard' %}" class="flex items-center space-x-2">
+                        <img src="{% static 'logo.svg' %}" alt="StaffSync Logo" class="h-8 md:h-10">
+                    </a>
+                    <div class="hidden md:block border-l border-gray-300 pl-4">
+                        <h2 class="text-sm font-medium text-gray-600">Welcome back,</h2>
+                        <p class="text-base font-semibold text-gray-800">{{ user.username }}</p>
+                                    </div>
+                                    </div>
+                <nav class="hidden md:flex items-center space-x-1">
+                    <a href="{% url 'dashboard' %}" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">📊 Dashboard</a>
+                    <a href="{% url 'employee_list' %}" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">👥 Employees</a>
+                    <a href="{% url 'attendance_list' %}" class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg transition-all duration-200">📋 Attendance</a>
+                    <a href="{% url 'mark_attendance' %}" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">✅ Mark Attendance</a>
+                </nav>
+                                </div>
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'logout' %}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-red-600 rounded-lg hover:from-red-600 hover:to-red-700 shadow-md hover:shadow-lg transition-all duration-200">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                    </svg>
+                    Logout
+                </a>
+                            </div>
+                                    </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+        <!-- Page Header -->
+        <div class="mb-6 lg:mb-8">
+            <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2 tracking-tight">Attendance Records</h1>
+            <p class="text-base md:text-lg text-gray-700 font-semibold">Comprehensive date-wise view of employee attendance</p>
+                                    </div>
+
+        <div class="card fade-in p-6 md:p-8">
+
+            <!-- Professional Date Range Selector -->
+            <div class="mb-8">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 p-6 bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30 rounded-2xl border-2 border-blue-100/50 shadow-lg">
+                    <div class="flex-1">
+                        <p class="text-sm font-bold text-gray-600 uppercase tracking-wide mb-2">Selected Date Range</p>
+                        <div id="selectedRangeDisplay" class="text-2xl md:text-3xl font-extrabold text-gray-900">
+                            <span class="text-blue-600">{{ start_date|date:"M j, Y" }}</span>
+                            <span class="mx-3 text-gray-400">→</span>
+                            <span class="text-purple-600">{{ end_date|date:"M j, Y" }}</span>
+                            {% with days=end_date|timesince:start_date %}
+                            <span class="ml-4 text-lg text-gray-500 font-semibold">
+                                ({{ days|slice:":2"|add:1 }} days)
+                            </span>
+                            {% endwith %}
+                                    </div>
+                                </div>
+                    <button type="button" onclick="toggleCalendar(event);" class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 active:scale-95 min-h-[48px] min-w-[48px]">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span class="hidden sm:inline">Select Date Range</span>
+                        <span class="sm:hidden">Select</span>
+                    </button>
+                </div>
+            </div>
+
+            {% if attendance_matrix %}
+            <!-- Attendance Table Card -->
+            <div class="card p-0 overflow-hidden mt-8">
+                <div class="px-6 py-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-200">
+                    <h2 class="text-xl font-extrabold text-gray-900 tracking-tight">Employee Attendance Matrix</h2>
+                    <p class="text-sm text-gray-600 font-semibold mt-1">View attendance status for all employees</p>
+                </div>
+            <div class="overflow-x-auto smooth-scroll" style="scroll-behavior: smooth;">
+                    <table class="modern-table min-w-full">
+                    <thead>
+                            <tr class="bg-gradient-to-r from-gray-50 to-blue-50/30">
+                                <th class="sticky left-0 z-30 min-w-[240px] max-w-[240px] rounded-tl-xl bg-gradient-to-r from-gray-50 to-blue-50/30 px-6 py-4 border-r-2 border-gray-300" style="position: -webkit-sticky; position: sticky; left: 0; top: 0;">
+                                    <div class="flex items-center space-x-3">
+                                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                        <span class="text-base font-extrabold text-gray-900">Employee Name</span>
+                                    </div>
+                                </th>
+                                <th class="min-w-[140px] px-4 py-4">
+                                    <div class="flex items-center space-x-2">
+                                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                        </svg>
+                                        <span class="text-sm font-bold text-gray-700">Department</span>
+                                    </div>
+                                </th>
+                            {% for date_info in dates %}
+                                <th class="py-4 px-3 border-b-2 font-extrabold text-center min-w-[110px] transition-all duration-200
+                                    {% if date_info.is_non_working %}bg-gray-100 text-gray-500 border-gray-300{% elif date_info.is_weekend %}bg-red-50 text-red-600 border-red-200{% elif date_info.is_holiday %}bg-blue-100 text-blue-700 border-blue-300{% else %}bg-blue-50 text-blue-800 border-blue-200{% endif %}">
+                                    <div class="flex flex-col items-center gap-1">
+                                        <span class="text-sm font-extrabold">{{ date_info.date|date:"M j" }}</span>
+                                        <span class="text-xs font-bold {% if date_info.is_weekend %}text-red-600{% elif date_info.is_holiday %}text-blue-700{% else %}text-gray-600{% endif %}">
+                                        {{ date_info.weekday|slice:":3" }}
+                                        </span>
+                                        {% if date_info.is_holiday %}
+                                            <span class="text-xs font-bold text-blue-700 bg-blue-200 rounded px-1.5 py-0.5 mt-0.5">Holiday</span>
+                                        {% endif %}
+                                        {% if date_info.date == today %}
+                                        <span class="text-xs font-bold text-yellow-800 bg-yellow-200 rounded px-1.5 py-0.5 mt-0.5">Today</span>
+                                    {% endif %}
+                                </div>
+                            </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employee_data in attendance_matrix %}
+                            <tr class="transition-all duration-200 hover:bg-blue-50/30 border-b border-gray-100 group/row">
+                                <td class="font-semibold sticky left-0 z-20 min-w-[240px] max-w-[240px] bg-white border-r-2 border-gray-300 px-6 py-4" style="position: -webkit-sticky; position: sticky; left: 0; background-color: white !important;">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md flex-shrink-0">
+                                            {{ employee_data.employee.first_name|first }}{{ employee_data.employee.last_name|first }}
+                                        </div>
+                                        <span class="text-gray-900 font-bold text-base truncate">{{ employee_data.employee.first_name }} {{ employee_data.employee.last_name }}</span>
+                                    </div>
+                            </td>
+                                <td class="text-gray-700 font-semibold px-4 py-4">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-lg bg-gray-100 text-sm font-bold">
+                                {{ employee_data.employee.department }}
+                                    </span>
+                            </td>
+                            {% for day_data in employee_data.daily_attendance %}
+                                <td class="text-center align-middle py-4 px-3 transition-all duration-200
+                                    {% if day_data.is_non_working %}bg-gray-50/50{% elif day_data.attendance and day_data.attendance.status == 'present' %}bg-green-50/70{% elif day_data.attendance and day_data.attendance.status == 'absent' %}bg-red-50/70{% else %}bg-white{% endif %}">
+                                {% if day_data.attendance %}
+                                    {% if day_data.attendance.status == 'present' %}
+                                            <div class="inline-flex flex-col items-center gap-1">
+                                                <div class="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-110 cursor-pointer">
+                                                    <span class="text-sm font-extrabold">P</span>
+                                                </div>
+                                                {% if day_data.attendance.is_locked %}
+                                                    <svg class="w-3.5 h-3.5 text-gray-400" fill="currentColor" viewBox="0 0 20 20" title="Locked">
+                                                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                {% endif %}
+                                        </div>
+                                    {% elif day_data.attendance.status == 'absent' %}
+                                            <div class="inline-flex flex-col items-center gap-1">
+                                                <div class="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-110 cursor-pointer">
+                                                    <span class="text-sm font-extrabold">A</span>
+                                        </div>
+                                    {% if day_data.attendance.is_locked %}
+                                                    <svg class="w-3.5 h-3.5 text-gray-400" fill="currentColor" viewBox="0 0 20 20" title="Locked">
+                                                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                {% endif %}
+                                            </div>
+                                    {% endif %}
+                                {% else %}
+                                    {% if day_data.is_non_working %}
+                                            <div class="inline-flex items-center justify-center w-10 h-10 bg-gray-200 text-gray-500 rounded-full">
+                                                <span class="text-xs font-bold">-</span>
+                                        </div>
+                                    {% else %}
+                                            <div class="inline-flex items-center justify-center w-10 h-10 bg-gray-100 text-gray-400 rounded-full border border-gray-200">
+                                                <span class="text-xs font-semibold">-</span>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+            </div>
+
+            <!-- Legend Card -->
+            <div class="card p-6 mt-8">
+                <div class="flex items-center space-x-2 mb-5 pb-4 border-b border-gray-200">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h3 class="text-lg font-extrabold text-gray-900">Legend</h3>
+                    </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="flex items-center space-x-3 p-3 bg-green-50 rounded-xl border border-green-200">
+                        <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-md flex-shrink-0">
+                            <span class="text-sm font-extrabold text-white">P</span>
+                </div>
+                        <div>
+                            <span class="text-sm font-extrabold text-gray-900 block">Present</span>
+                            <span class="text-xs text-gray-600 font-semibold">Marked as present</span>
+                    </div>
+                </div>
+                    <div class="flex items-center space-x-3 p-3 bg-red-50 rounded-xl border border-red-200">
+                        <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-md flex-shrink-0">
+                            <span class="text-sm font-extrabold text-white">A</span>
+                    </div>
+                        <div>
+                            <span class="text-sm font-extrabold text-gray-900 block">Absent</span>
+                            <span class="text-xs text-gray-600 font-semibold">Marked as absent</span>
+                </div>
+                    </div>
+                    <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                        <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center border-2 border-gray-300 flex-shrink-0">
+                            <span class="text-xs font-bold text-gray-500">-</span>
+                        </div>
+                        <div>
+                            <span class="text-sm font-extrabold text-gray-900 block">Not Recorded</span>
+                            <span class="text-xs text-gray-600 font-semibold">No attendance data</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3 p-3 bg-blue-50 rounded-xl border border-blue-200">
+                        <svg class="w-10 h-10 text-gray-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div>
+                            <span class="text-sm font-extrabold text-gray-900 block">Locked</span>
+                            <span class="text-xs text-gray-600 font-semibold">8+ hours old</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Statistics -->
+            <div class="mt-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">Daily Attendance Summary</h2>
+                        <p class="text-sm text-gray-600 font-semibold mt-1">Breakdown by day for the selected period</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {% for stat in daily_stats %}
+                {% if not stat.is_non_working %}
+                    <div class="stat-card group">
+                        <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+                            <div>
+                                <h4 class="text-base font-extrabold text-gray-900 mb-1">{{ stat.date|date:"M j, Y" }}</h4>
+                                <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">{{ stat.weekday }}</p>
+                        </div>
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                        </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-green-100/50 rounded-xl border border-green-200">
+                                <div class="flex items-center space-x-2.5">
+                                    <div class="w-3 h-3 bg-green-500 rounded-full shadow-sm"></div>
+                                    <span class="text-sm font-bold text-gray-800">Present</span>
+                    </div>
+                                <span class="text-xl font-extrabold text-green-700">{{ stat.present }}</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gradient-to-r from-red-50 to-red-100/50 rounded-xl border border-red-200">
+                                <div class="flex items-center space-x-2.5">
+                                    <div class="w-3 h-3 bg-red-500 rounded-full shadow-sm"></div>
+                                    <span class="text-sm font-bold text-gray-800">Absent</span>
+                                </div>
+                                <span class="text-xl font-extrabold text-red-700">{{ stat.absent }}</span>
+                            </div>
+                            <div class="pt-3 border-t-2 border-gray-200">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="text-sm font-bold text-gray-700">Total Employees</span>
+                                    <span class="text-lg font-extrabold text-gray-900">{{ stat.total }}</span>
+                                </div>
+                                {% if stat.total > 0 %}
+                                {% widthratio stat.present stat.total 100 as percentage %}
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-bold text-gray-600">Attendance Rate</span>
+                                        <span class="text-sm font-extrabold text-blue-600">{{ percentage }}%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden shadow-inner">
+                                        <div class="h-full bg-gradient-to-r from-green-500 to-green-600 rounded-full transition-all duration-500" style="width: {{ percentage }}%"></div>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <p class="text-xs text-gray-500 font-semibold text-center py-2">No data available</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                </div>
+            </div>
+
+            {% else %}
+            <!-- Empty State -->
+            <div class="card p-12 text-center mt-8">
+                <div class="max-w-md mx-auto">
+                    <div class="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                    <h3 class="text-2xl font-extrabold text-gray-900 mb-3">No Attendance Records</h3>
+                    <p class="text-base text-gray-600 font-semibold mb-8">There are no employees in the system yet. Add employees to start tracking attendance.</p>
+                    <a href="{% url 'employee_create' %}" class="inline-flex items-center px-6 py-3.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white font-extrabold rounded-xl shadow-lg hover:shadow-xl hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-105 active:scale-95">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                    Add New Employee
+                </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Professional Date Range Picker Modal - Top Aligned, Horizontally Centered -->
+    <div id="calendarModal" onclick="if(event.target.id === 'calendarModal') toggleCalendar(event);" class="fixed inset-0 bg-gradient-to-br from-black/80 via-black/70 to-black/75 backdrop-blur-xl hidden z-[1050] flex items-start justify-center p-3 sm:p-4 md:p-6 overflow-y-auto transition-all duration-300 ease-out" role="dialog" aria-labelledby="calendarTitle" aria-modal="true" style="align-items: flex-start; justify-content: center;">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-6xl w-full max-h-[92vh] overflow-hidden border border-gray-200/80 flex flex-col lg:flex-row relative transform transition-all duration-300 ease-out" id="calendarModalContent" style="box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9); overflow-x: hidden; backdrop-filter: blur(20px);">
+            <!-- Quick Select Sidebar - Enhanced Professional Design -->
+            <aside class="w-full lg:w-80 bg-gradient-to-br from-blue-50/95 via-indigo-50/95 via-purple-50/95 to-pink-50/95 p-6 lg:p-7 border-r border-gray-200/80 flex flex-col flex-shrink-0 relative overflow-y-auto overflow-x-hidden backdrop-blur-md scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-blue-50/50" role="region" aria-label="Quick select date ranges">
+                <!-- Enhanced Decorative Elements -->
+                <div class="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-blue-300/30 to-purple-300/20 rounded-full -mr-24 -mt-24 blur-2xl"></div>
+                <div class="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-purple-300/30 to-pink-300/20 rounded-full -ml-20 -mb-20 blur-2xl"></div>
+                <div class="absolute top-1/2 left-1/2 w-32 h-32 bg-blue-200/20 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
+                
+                <div class="relative z-10 flex-1 flex flex-col min-w-0">
+                    <!-- Enhanced Header -->
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200/60 relative">
+                        <div class="absolute inset-0 bg-gradient-to-r from-blue-100/20 via-purple-100/15 to-pink-100/20 opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-t-3xl"></div>
+                        <h3 class="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent tracking-tight relative z-10 truncate">Quick Select</h3>
+                        <button type="button" onclick="toggleCalendar(event);" class="text-gray-400 hover:text-gray-700 transition-all duration-200 p-2 rounded-xl hover:bg-white/90 hover:shadow-lg hover:scale-110 active:scale-95 relative z-10 flex-shrink-0" aria-label="Close">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Enhanced Preset Buttons Grid -->
+                    <div class="grid grid-cols-1 gap-2.5 mb-6" role="listbox">
+                        {% for preset in presets %}
+                        <button type="button" 
+                                onclick="applyPresetRange('{{ preset.value }}', event);" 
+                                data-preset="{{ preset.value }}"
+                                class="w-full text-left px-5 py-3.5 text-base font-semibold rounded-xl transition-all duration-300 focus:outline-none focus:ring-3 focus:ring-blue-400 focus:ring-offset-2 transform hover:scale-[1.02] active:scale-95 relative overflow-visible
+                                    {% if selected_preset == preset.value %}bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white shadow-xl shadow-blue-500/30 ring-2 ring-blue-400/50 scale-[1.02]{% else %}bg-white/90 backdrop-blur-sm text-gray-900 hover:bg-white hover:shadow-lg hover:shadow-blue-500/10 border border-gray-200/60 hover:border-blue-300/60{% endif %}">
+                            <span class="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-purple-500/0 to-pink-500/0 {% if selected_preset != preset.value %}hover:from-blue-500/10 hover:via-purple-500/10 hover:to-pink-500/10{% endif %} transition-all duration-300 rounded-xl"></span>
+                            <span class="flex items-center justify-between relative z-10 w-full">
+                                <span class="flex items-center flex-1 min-w-0 pr-3">
+                                    <span class="text-xl mr-3 flex-shrink-0">{{ preset.icon }}</span>
+                                    <span class="font-extrabold text-base whitespace-nowrap overflow-visible">{{ preset.label }}</span>
+                                </span>
+                                {% if selected_preset == preset.value %}
+                                <svg class="w-5 h-5 text-white drop-shadow-sm flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                {% endif %}
+                            </span>
+                        </button>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Enhanced Custom Range Section -->
+                    <div class="mt-auto pt-6 border-t border-gray-200/60 relative z-10 bg-white/40 backdrop-blur-sm rounded-2xl p-5 -mx-1 overflow-visible shadow-sm">
+                        <h4 class="text-base font-extrabold bg-gradient-to-r from-blue-700 via-purple-700 to-pink-700 bg-clip-text text-transparent mb-5 flex items-center">
+                            <svg class="w-5 h-5 mr-2.5 text-purple-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="whitespace-nowrap">Custom Range</span>
+                        </h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="customStartDate" class="block text-xs font-extrabold text-gray-900 mb-2.5 uppercase tracking-widest">FROM DATE</label>
+                                <div class="relative">
+                                    <input type="date" 
+                                           id="customStartDate" 
+                                           class="w-full px-4 py-3 pr-12 border-2 border-gray-300/80 rounded-xl text-base focus:ring-3 focus:ring-blue-500/50 focus:border-blue-500 bg-white shadow-sm hover:shadow-md transition-all duration-200 hover:border-blue-400/80 font-semibold text-gray-900" 
+                                           min="2024-01-01"
+                                           max="{{ today|date:'Y-m-d' }}"
+                                           step="1"
+                                           required>
+                                    <svg class="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="customEndDate" class="block text-xs font-extrabold text-gray-900 mb-2.5 uppercase tracking-widest">TO DATE</label>
+                                <div class="relative">
+                                    <input type="date" 
+                                           id="customEndDate" 
+                                           class="w-full px-4 py-3 pr-12 border-2 border-gray-300/80 rounded-xl text-base focus:ring-3 focus:ring-blue-500/50 focus:border-blue-500 bg-white shadow-sm hover:shadow-md transition-all duration-200 hover:border-blue-400/80 font-semibold text-gray-900" 
+                                           min="2024-01-01"
+                                           max="{{ today|date:'Y-m-d' }}"
+                                           step="1"
+                                           required>
+                                    <svg class="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <button type="button" 
+                                    onclick="applyCustomRange(event);" 
+                                    class="w-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white px-5 py-3.5 rounded-xl text-base font-extrabold shadow-xl hover:shadow-2xl focus:outline-none focus:ring-3 focus:ring-blue-400 focus:ring-offset-2 transition-all duration-200 transform hover:scale-[1.02] active:scale-100 min-h-[48px]">
+                                <span class="flex items-center justify-center whitespace-nowrap">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    Apply Custom Range
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+            <!-- Enhanced Calendar Section -->
+            <main class="flex-1 p-4 sm:p-6 lg:p-8 flex flex-col bg-gradient-to-br from-white via-blue-50/30 to-purple-50/20 relative overflow-hidden">
+                <!-- Enhanced Month Navigation -->
+                <div class="flex items-center justify-between mb-5 sm:mb-6 w-full bg-white/98 backdrop-blur-md py-3.5 sm:py-4 z-20 border-b border-gray-200/60 rounded-xl px-4 sm:px-5 -mx-2 shadow-sm flex-shrink-0">
+                    <button type="button" 
+                            onclick="navigateMonthRelative(-1, event)" 
+                            id="prevMonthBtn"
+                            class="p-3 bg-gradient-to-br from-blue-50/90 via-purple-50/90 to-pink-50/90 hover:from-blue-100 hover:via-purple-100 hover:to-pink-100 focus:ring-3 focus:ring-blue-400/50 rounded-xl transition-all duration-200 transform hover:scale-110 active:scale-95 shadow-sm hover:shadow-lg border border-gray-200/60 hover:border-blue-300/60 min-h-[48px] min-w-[48px] flex items-center justify-center group" 
+                            aria-label="Previous month">
+                        <svg class="w-6 h-6 text-blue-600 group-hover:text-blue-700 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="flex items-center justify-center gap-2 sm:gap-3 px-2 sm:px-4">
+                        <div class="relative">
+                            <select id="monthSelect" 
+                                    onchange="changeMonthYear()"
+                                    class="month-select text-base sm:text-lg md:text-xl font-extrabold tracking-tight text-center cursor-pointer bg-transparent hover:bg-white/50 border-0 hover:border-0 focus:border-0 rounded-xl px-4 sm:px-5 py-1.5 sm:py-2 transition-all duration-200 focus:ring-0 focus:outline-none min-w-[160px] sm:min-w-[180px]"
+                                    style="appearance: none; padding-right: 4rem; width: auto;">
+                                <option value="1" {% if calendar_dates.0.month == 1 %}selected{% endif %} style="color: #1f2937; background: white;">January</option>
+                                <option value="2" {% if calendar_dates.0.month == 2 %}selected{% endif %} style="color: #1f2937; background: white;">February</option>
+                                <option value="3" {% if calendar_dates.0.month == 3 %}selected{% endif %} style="color: #1f2937; background: white;">March</option>
+                                <option value="4" {% if calendar_dates.0.month == 4 %}selected{% endif %} style="color: #1f2937; background: white;">April</option>
+                                <option value="5" {% if calendar_dates.0.month == 5 %}selected{% endif %} style="color: #1f2937; background: white;">May</option>
+                                <option value="6" {% if calendar_dates.0.month == 6 %}selected{% endif %} style="color: #1f2937; background: white;">June</option>
+                                <option value="7" {% if calendar_dates.0.month == 7 %}selected{% endif %} style="color: #1f2937; background: white;">July</option>
+                                <option value="8" {% if calendar_dates.0.month == 8 %}selected{% endif %} style="color: #1f2937; background: white;">August</option>
+                                <option value="9" {% if calendar_dates.0.month == 9 %}selected{% endif %} style="color: #1f2937; background: white;">September</option>
+                                <option value="10" {% if calendar_dates.0.month == 10 %}selected{% endif %} style="color: #1f2937; background: white;">October</option>
+                                <option value="11" {% if calendar_dates.0.month == 11 %}selected{% endif %} style="color: #1f2937; background: white;">November</option>
+                                <option value="12" {% if calendar_dates.0.month == 12 %}selected{% endif %} style="color: #1f2937; background: white;">December</option>
+                            </select>
+                            <div class="absolute right-5 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                                <svg width="14" height="14" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 9L1 4h10z" fill="#667eea"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <input type="number" 
+                               id="yearSelect" 
+                               value="{{ calendar_dates.0.year }}"
+                               onchange="changeMonthYear()"
+                               onblur="changeMonthYear()"
+                               min="2024" 
+                               max="{{ today.year }}"
+                               class="year-input text-base sm:text-lg md:text-xl font-extrabold tracking-tight text-center cursor-text bg-transparent hover:bg-white/50 border-0 hover:border-0 focus:border-0 rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 transition-all duration-200 focus:ring-0 focus:outline-none w-24 sm:w-28">
+                    </div>
+                    <button type="button" 
+                            onclick="navigateMonthRelative(1, event)" 
+                            id="nextMonthBtn"
+                            class="p-3 bg-gradient-to-br from-blue-50/90 via-purple-50/90 to-pink-50/90 hover:from-blue-100 hover:via-purple-100 hover:to-pink-100 focus:ring-3 focus:ring-blue-400/50 rounded-xl transition-all duration-200 transform hover:scale-110 active:scale-95 shadow-sm hover:shadow-lg border border-gray-200/60 hover:border-blue-300/60 min-h-[48px] min-w-[48px] flex items-center justify-center group" 
+                            aria-label="Next month">
+                        <svg class="w-6 h-6 text-blue-600 group-hover:text-blue-700 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <!-- Calendar Grid - 2 Months Only - Centered -->
+                <div id="calendarGridContainer" class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 justify-items-center items-center w-full flex-1 overflow-hidden pb-4 self-center relative" style="position: relative;">
+                    {% for month_data in calendar_dates %}
+                    <div class="calendar-month bg-white rounded-2xl sm:rounded-3xl shadow-md hover:shadow-xl border border-gray-200/70 flex flex-col items-center justify-start w-full p-4 sm:p-5 md:p-6 relative z-10 transition-all duration-300 hover:border-blue-300/60 hover:shadow-2xl group overflow-hidden" 
+                         data-month="{{ month_data.month }}" 
+                         data-year="{{ month_data.year }}">
+                        <!-- Decorative Background Gradient -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                        
+                        <!-- Month Header -->
+                        <div class="flex items-center justify-center mb-4 w-full pb-3 border-b border-gray-200/60 relative z-10">
+                            <div class="absolute inset-0 bg-gradient-to-r from-blue-100/40 via-purple-100/25 to-pink-100/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <h3 class="text-base sm:text-lg font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent tracking-tight text-center relative z-10 whitespace-nowrap">
+                                {{ month_data.month_name }} {{ month_data.year }}
+                            </h3>
+                        </div>
+                        
+                        <!-- Weekday Headers -->
+                        <div class="grid grid-cols-7 gap-1.5 sm:gap-2 mb-3.5 w-full relative z-10">
+                            <div class="text-center text-[10px] sm:text-xs font-semibold text-gray-600 py-2 uppercase tracking-wider min-w-0">Mon</div>
+                            <div class="text-center text-[10px] sm:text-xs font-semibold text-gray-600 py-2 uppercase tracking-wider min-w-0">Tue</div>
+                            <div class="text-center text-[10px] sm:text-xs font-semibold text-gray-600 py-2 uppercase tracking-wider min-w-0">Wed</div>
+                            <div class="text-center text-[10px] sm:text-xs font-semibold text-gray-600 py-2 uppercase tracking-wider min-w-0">Thu</div>
+                            <div class="text-center text-[10px] sm:text-xs font-semibold text-gray-600 py-2 uppercase tracking-wider min-w-0">Fri</div>
+                            <div class="text-center text-[10px] sm:text-xs font-semibold text-red-600 py-2 uppercase tracking-wider min-w-0">Sat</div>
+                            <div class="text-center text-[10px] sm:text-xs font-semibold text-red-600 py-2 uppercase tracking-wider min-w-0">Sun</div>
+                        </div>
+                        
+                        <!-- Calendar Days Grid -->
+                        <div class="grid grid-cols-7 gap-1.5 sm:gap-2 w-full relative z-10">
+                            {% for week in month_data.weeks %}
+                                {% for day in week %}
+                                    {% if day %}
+                                        <button type="button" 
+                                                onclick="selectDateRange('{{ day|date:'Y-m-d' }}', event);"
+                                                class="calendar-day w-11 h-11 sm:w-12 sm:h-12 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-1 rounded-lg transition-all duration-200 relative flex items-center justify-center group/date
+                                                {% if day > today %}text-gray-300 cursor-not-allowed bg-gray-50/80 opacity-50 border border-gray-100{% elif day == today %}border-2 border-yellow-400 bg-gradient-to-br from-yellow-50 to-yellow-100/90 text-gray-900 shadow-md shadow-yellow-400/20{% else %}text-gray-700 bg-white hover:bg-gradient-to-br hover:from-blue-50/90 hover:to-purple-50/90 border border-gray-200/70 hover:border-blue-300/70 hover:shadow-md hover:shadow-blue-500/10 hover:scale-105 active:scale-95{% endif %}"
+                                                {% if day > today %}disabled{% endif %}
+                                                data-date="{{ day|date:'Y-m-d' }}"
+                                                aria-label="{{ day|date:'F j, Y' }}">
+                                                    <span class="relative z-10">{{ day.day }}</span>
+                                                    {% if day == today %}
+                                                        <span class="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-yellow-500 rounded-full shadow-sm"></span>
+                                                    {% endif %}
+                                                    <span class="absolute inset-0 rounded-lg bg-gradient-to-br from-blue-500/0 to-purple-500/0 group-hover/date:from-blue-500/10 group-hover/date:to-purple-500/10 transition-all duration-200"></span>
+                                                </button>
+                                    {% else %}
+                                        <div class="w-11 h-11 sm:w-12 sm:h-12"></div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Action Buttons - Fixed Footer -->
+                <div class="flex flex-col sm:flex-row justify-end gap-3 pt-5 border-t border-gray-200/60 w-full bg-white/98 backdrop-blur-sm flex-shrink-0 mt-5">
+                    <button type="button" 
+                            onclick="toggleCalendar(event);" 
+                            class="px-6 py-3 text-base font-bold text-gray-700 bg-white border-2 border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-3 focus:ring-gray-400 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 active:scale-95 min-h-[48px]">
+                        Cancel
+                    </button>
+                    <button type="button" 
+                            onclick="applyDateRange(event);" 
+                            class="px-8 py-3 text-base font-extrabold text-white bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 border border-transparent rounded-xl hover:from-blue-700 hover:via-purple-700 hover:to-pink-700 focus:outline-none focus:ring-3 focus:ring-blue-400 focus:ring-offset-2 shadow-xl hover:shadow-2xl transition-all duration-200 transform hover:scale-105 active:scale-95 min-h-[48px]">
+                        <span class="flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Apply Date Range
+                        </span>
+                    </button>
+                </div>
+            </main>
         </div>
     </div>
+
+    <script>
+        // Professional Date Range Picker - Senior Developer Quality
+        // Initialize date range from Django context
+        let selectedStartDate = '{{ start_date|date:"Y-m-d" }}';
+        let selectedEndDate = '{{ end_date|date:"Y-m-d" }}';
+        let tempStartDate = selectedStartDate;
+        let tempEndDate = selectedEndDate;
+        const todayStr = '{{ today|date:"Y-m-d" }}';
+        let selectionMode = 'start'; // 'start' or 'end'
+
+        function toggleCalendar(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            const modal = document.getElementById('calendarModal');
+            const modalContent = document.getElementById('calendarModalContent');
+            const isHidden = modal.classList.contains('hidden');
+            
+            if (isHidden) {
+                // Opening modal - reset to current selected range
+                tempStartDate = selectedStartDate;
+                tempEndDate = selectedEndDate;
+                selectionMode = 'start';
+                
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+                modal.style.alignItems = 'flex-start';
+                modal.style.justifyContent = 'center';
+                modal.style.paddingTop = '2rem';
+                document.body.style.overflow = 'hidden';
+                
+                // Ensure modal scrolls to top
+                modal.scrollTop = 0;
+                
+                // Trigger animation
+                setTimeout(() => {
+                    if (modalContent) {
+                        modalContent.style.animation = 'none';
+                        requestAnimationFrame(() => {
+                            modalContent.style.animation = 'modalFadeIn 0.3s ease-out forwards';
+                        });
+                    }
+                }, 10);
+                
+                updateSelectedRangeDisplay();
+                updateCalendarHighlights();
+                syncCustomInputs();
+            } else {
+                // Closing modal
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+        }
+
+        function syncCustomInputs() {
+            const startInput = document.getElementById('customStartDate');
+            const endInput = document.getElementById('customEndDate');
+            if (startInput && tempStartDate) {
+                startInput.value = tempStartDate;
+            }
+            if (endInput && tempEndDate) {
+                endInput.value = tempEndDate;
+            }
+        }
+
+        function selectDateRange(dateStr, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            const selectedDate = new Date(dateStr + 'T00:00:00');
+            const today = new Date(todayStr + 'T00:00:00');
+            
+            // Prevent future dates
+            if (selectedDate > today) {
+                if (window.showToast) {
+                    window.showToast('Cannot select future dates', 'warning');
+                }
+                return;
+            }
+            
+            // Range selection logic: first click sets start, second click sets end
+            if (!tempStartDate || selectionMode === 'start' || selectedDate < new Date(tempStartDate + 'T00:00:00')) {
+                // Set as start date
+            tempStartDate = dateStr;
+                tempEndDate = null;
+                selectionMode = 'end';
+                if (window.showToast) {
+                    window.showToast(`Start date selected: ${formatDate(dateStr)}. Select end date.`, 'info', 2000);
+                }
+            } else {
+                // Set as end date (must be after start date)
+                if (selectedDate < new Date(tempStartDate + 'T00:00:00')) {
+                    // If clicked date is before start, set as new start
+                    tempStartDate = dateStr;
+                    tempEndDate = null;
+                    selectionMode = 'end';
+                } else {
+                    tempEndDate = dateStr;
+                    selectionMode = 'start';
+                    if (window.showToast) {
+                        window.showToast(`Range selected: ${formatDate(tempStartDate)} - ${formatDate(dateStr)}`, 'success', 2000);
+                    }
+                }
+            }
+            
+            updateSelectedRangeDisplay();
+            updateCalendarHighlights();
+            syncCustomInputs();
+        }
+
+        function applyPresetRange(range, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            const today = new Date(todayStr + 'T00:00:00');
+            let start, end;
+
+            switch(range) {
+                case 'today':
+                    start = end = new Date(today);
+                    break;
+                case 'yesterday':
+                    start = end = new Date(today);
+                    start.setDate(today.getDate() - 1);
+                    break;
+                case 'last7days':
+                    end = new Date(today);
+                    start = new Date(today);
+                    start.setDate(today.getDate() - 6);
+                    break;
+                case 'last30days':
+                    end = new Date(today);
+                    start = new Date(today);
+                    start.setDate(today.getDate() - 29);
+                    break;
+                case 'last90days':
+                    end = new Date(today);
+                    start = new Date(today);
+                    start.setDate(today.getDate() - 89);
+                    break;
+                case 'thisweek':
+                    start = new Date(today);
+                    start.setDate(today.getDate() - today.getDay() + 1); // Monday
+                    end = new Date(today);
+                    break;
+                case 'lastweek':
+                    end = new Date(today);
+                    end.setDate(today.getDate() - today.getDay()); // Sunday of last week
+                    start = new Date(end);
+                    start.setDate(end.getDate() - 6); // Monday of last week
+                    break;
+                case 'thismonth':
+                    start = new Date(today.getFullYear(), today.getMonth(), 1);
+                    end = new Date(today);
+                    break;
+                case 'lastmonth':
+                    start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                    end = new Date(today.getFullYear(), today.getMonth(), 0);
+                    break;
+                case 'thisyear':
+                    start = new Date(today.getFullYear(), 0, 1);
+                    end = new Date(today);
+                    break;
+                case 'lastyear':
+                    start = new Date(today.getFullYear() - 1, 0, 1);
+                    end = new Date(today.getFullYear() - 1, 11, 31);
+                    break;
+                default:
+                    return;
+            }
+
+            tempStartDate = formatDateForInput(start);
+            tempEndDate = formatDateForInput(end);
+            selectionMode = 'start';
+            
+            updateSelectedRangeDisplay();
+            updateCalendarHighlights();
+            syncCustomInputs();
+            
+            if (window.showToast) {
+                window.showToast(`Applied preset: ${range}`, 'success', 1500);
+            }
+        }
+
+        function applyCustomRange(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            const startInput = document.getElementById('customStartDate');
+            const endInput = document.getElementById('customEndDate');
+
+            if (!startInput || !endInput || !startInput.value || !endInput.value) {
+                if (window.showToast) {
+                    window.showToast('Please select both start and end dates', 'error');
+                } else {
+                alert('Please select both start and end dates.');
+                }
+                return;
+            }
+
+            const startDate = new Date(startInput.value + 'T00:00:00');
+            const endDate = new Date(endInput.value + 'T00:00:00');
+            const today = new Date(todayStr + 'T00:00:00');
+            const minDate = new Date('2024-01-01T00:00:00');
+
+            // Validate minimum date (2024-01-01)
+            if (startDate < minDate) {
+                if (window.showToast) {
+                    window.showToast('Start date cannot be before January 1, 2024', 'error');
+                } else {
+                    alert('Start date cannot be before January 1, 2024.');
+                }
+                startInput.value = '';
+                return;
+            }
+
+            if (endDate < minDate) {
+                if (window.showToast) {
+                    window.showToast('End date cannot be before January 1, 2024', 'error');
+                } else {
+                    alert('End date cannot be before January 1, 2024.');
+                }
+                endInput.value = '';
+                return;
+            }
+
+            if (startDate > endDate) {
+                if (window.showToast) {
+                    window.showToast('Start date cannot be after end date', 'error');
+                } else {
+                alert('Start date cannot be after end date.');
+                }
+                return;
+            }
+
+            if (endDate > today) {
+                if (window.showToast) {
+                    window.showToast('End date cannot be in the future', 'error');
+                } else {
+                alert('End date cannot be in the future.');
+                }
+                return;
+            }
+
+            tempStartDate = startInput.value;
+            tempEndDate = endInput.value;
+            selectionMode = 'start';
+            
+            // Automatically apply the date range
+            applyDateRange(event);
+        }
+
+        // Store current calendar view state
+        let currentCalendarMonth = {% if calendar_dates.0.month %}{{ calendar_dates.0.month }}{% else %}1{% endif %};
+        let currentCalendarYear = {% if calendar_dates.0.year %}{{ calendar_dates.0.year }}{% else %}2024{% endif %};
+
+        // Helper function to navigate relative to current month
+        function navigateMonthRelative(direction, event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            navigateMonth(event, currentCalendarYear, currentCalendarMonth, direction);
+        }
+
+        function navigateMonth(event, year, month, direction) {
+            if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            }
+
+            // Get today's date
+            const today = new Date('{{ today|date:"Y-m-d" }}' + 'T00:00:00');
+            const todayMonth = today.getMonth() + 1;
+            const todayYear = today.getFullYear();
+
+            // Update the calendar view month/year without reloading
+            const currentDate = new Date(year, month - 1, 1);
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            
+            const newMonth = currentDate.getMonth() + 1;
+            const newYear = currentDate.getFullYear();
+            
+            // Restrict backward navigation to prevent going before 2024
+            if (direction < 0) {
+                // Backward navigation - don't allow going before January 2024
+                if (newYear < 2024 || (newYear === 2024 && newMonth < 1)) {
+                    if (window.showToast) {
+                        window.showToast('Cannot navigate before January 2024', 'info', 2000);
+                    }
+                    return;
+                }
+            }
+            
+            // Restrict forward navigation to current month only (don't go past today's month)
+            if (direction > 0) {
+                // Forward navigation
+                if (newYear > todayYear || (newYear === todayYear && newMonth > todayMonth)) {
+                    // Don't allow going past current month
+                    if (window.showToast) {
+                        window.showToast('Cannot navigate past the current month', 'info', 2000);
+                    }
+                    return;
+                }
+            }
+            
+            currentCalendarMonth = newMonth;
+            currentCalendarYear = newYear;
+
+            // Update the month and year selectors
+            updateMonthYearSelectors(currentCalendarMonth, currentCalendarYear);
+            
+            // Update next button state
+            updateNextButtonState(currentCalendarMonth, currentCalendarYear, todayMonth, todayYear);
+            
+            // Update previous button state
+            updatePrevButtonState(currentCalendarMonth, currentCalendarYear);
+
+            // Regenerate calendar months client-side
+            regenerateCalendarMonths(currentCalendarMonth, currentCalendarYear);
+        }
+        
+        function updateNextButtonState(month, year, todayMonth, todayYear) {
+            const nextBtn = document.getElementById('nextMonthBtn');
+            if (!nextBtn) return;
+            
+            // Disable next button if we're at or past current month
+            if (year >= todayYear && month >= todayMonth) {
+                nextBtn.disabled = true;
+                nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                nextBtn.classList.remove('hover:from-blue-100', 'hover:via-purple-100', 'hover:to-pink-100', 'hover:scale-110');
+            } else {
+                nextBtn.disabled = false;
+                nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                nextBtn.classList.add('hover:from-blue-100', 'hover:via-purple-100', 'hover:to-pink-100', 'hover:scale-110');
+            }
+        }
+        
+        function updatePrevButtonState(month, year) {
+            const prevBtn = document.getElementById('prevMonthBtn');
+            if (!prevBtn) return;
+            
+            // Disable previous button if we're at or before January 2024
+            if (year < 2024 || (year === 2024 && month <= 1)) {
+                prevBtn.disabled = true;
+                prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                prevBtn.classList.remove('hover:from-blue-100', 'hover:via-purple-100', 'hover:to-pink-100', 'hover:scale-110');
+            } else {
+                prevBtn.disabled = false;
+                prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                prevBtn.classList.add('hover:from-blue-100', 'hover:via-purple-100', 'hover:to-pink-100', 'hover:scale-110');
+            }
+        }
+
+        function changeMonthYear() {
+            const monthSelect = document.getElementById('monthSelect');
+            const yearSelect = document.getElementById('yearSelect');
+            
+            if (!monthSelect || !yearSelect) return;
+            
+            const selectedMonth = parseInt(monthSelect.value);
+            const selectedYear = parseInt(yearSelect.value);
+            
+            // Get today's date
+            const today = new Date('{{ today|date:"Y-m-d" }}' + 'T00:00:00');
+            const todayMonth = today.getMonth() + 1;
+            const todayYear = today.getFullYear();
+            
+            // Validate year range - minimum 2024
+            if (selectedYear < 2024 || selectedYear > todayYear) {
+                if (selectedYear > todayYear || (selectedYear === todayYear && selectedMonth > todayMonth)) {
+                    if (window.showToast) {
+                        window.showToast('Cannot select future months', 'info', 2000);
+                    }
+                    updateMonthYearSelectors(currentCalendarMonth, currentCalendarYear);
+                    return;
+                }
+                if (selectedYear < 2024) {
+                    if (window.showToast) {
+                        window.showToast('Cannot select years before 2024', 'info', 2000);
+                    }
+                    yearSelect.value = currentCalendarYear >= 2024 ? currentCalendarYear : 2024;
+                    return;
+                }
+            }
+            
+            // Don't allow selecting future months
+            if (selectedYear > todayYear || (selectedYear === todayYear && selectedMonth > todayMonth)) {
+                if (window.showToast) {
+                    window.showToast('Cannot select future months', 'info', 2000);
+                }
+                updateMonthYearSelectors(currentCalendarMonth, currentCalendarYear);
+                return;
+            }
+            
+            currentCalendarMonth = selectedMonth;
+            currentCalendarYear = selectedYear;
+            
+            // Update next button state
+            updateNextButtonState(currentCalendarMonth, currentCalendarYear, todayMonth, todayYear);
+            
+            // Update previous button state
+            updatePrevButtonState(currentCalendarMonth, currentCalendarYear);
+            
+            // Regenerate calendar months
+            regenerateCalendarMonths(currentCalendarMonth, currentCalendarYear);
+        }
+
+        function updateMonthYearSelectors(month, year) {
+            const monthSelect = document.getElementById('monthSelect');
+            const yearSelect = document.getElementById('yearSelect');
+            
+            if (monthSelect) {
+                monthSelect.value = month;
+            }
+            if (yearSelect) {
+                yearSelect.value = year;
+            }
+        }
+
+        function regenerateCalendarMonths(month, year) {
+            const container = document.getElementById('calendarGridContainer');
+            if (!container) return;
+
+            // Generate only 2 months starting from the specified month/year
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+            const today = new Date('{{ today|date:"Y-m-d" }}' + 'T00:00:00');
+            
+            container.innerHTML = '';
+            
+            // Generate 2 months starting from the specified month/year
+            for (let i = 0; i < 2; i++) {
+                const currentDate = new Date(year, month - 1 + i, 1);
+                const currentMonth = currentDate.getMonth() + 1;
+                const currentYear = currentDate.getFullYear();
+                const monthName = monthNames[currentMonth - 1];
+                
+                // Generate calendar for this month
+                const monthCard = generateMonthCard(currentMonth, currentYear, monthName, today);
+                container.appendChild(monthCard);
+            }
+        }
+
+        function generateMonthCard(month, year, monthName, today) {
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+            const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            
+            const monthDiv = document.createElement('div');
+            monthDiv.className = 'calendar-month bg-white rounded-2xl sm:rounded-3xl shadow-md hover:shadow-xl border border-gray-200/70 flex flex-col items-center justify-start w-full p-4 sm:p-5 md:p-6 relative z-10 transition-all duration-300 hover:border-blue-300/60 hover:shadow-2xl group overflow-hidden';
+            monthDiv.setAttribute('data-month', month);
+            monthDiv.setAttribute('data-year', year);
+            
+            // Get first day of month and number of days
+            const firstDay = new Date(year, month - 1, 1);
+            const lastDay = new Date(year, month, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = (firstDay.getDay() + 6) % 7; // Monday = 0
+            
+            // Build calendar HTML
+            let calendarHTML = `
+                <div class="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-pink-50/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                <div class="flex items-center justify-center mb-4 w-full pb-3 border-b border-gray-200/60 relative z-10">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-100/40 via-purple-100/25 to-pink-100/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <h3 class="text-base sm:text-lg font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent tracking-tight text-center relative z-10 whitespace-nowrap">
+                        ${monthName} ${year}
+                    </h3>
+                </div>
+                <div class="grid grid-cols-7 gap-1.5 sm:gap-2 mb-3.5 w-full relative z-10">
+            `;
+            
+            // Weekday headers
+            dayNames.forEach(day => {
+                const isWeekend = day === 'Sat' || day === 'Sun';
+                calendarHTML += `<div class="text-center text-[10px] sm:text-xs font-semibold ${isWeekend ? 'text-red-600' : 'text-gray-600'} py-2 uppercase tracking-wider min-w-0">${day}</div>`;
+            });
+            
+            calendarHTML += '</div><div class="grid grid-cols-7 gap-2 w-full relative z-10">';
+            
+            // Empty cells for days before month starts
+            for (let i = 0; i < startingDayOfWeek; i++) {
+                calendarHTML += '<div class="w-11 h-11 sm:w-12 sm:h-12"></div>';
+            }
+            
+            // Days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dateObj = new Date(year, month - 1, day);
+                const isToday = dateObj.toDateString() === today.toDateString();
+                const isFuture = dateObj > today;
+                const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
+                
+                let classes = 'calendar-day w-11 h-11 sm:w-12 sm:h-12 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-1 rounded-lg transition-all duration-200 relative flex items-center justify-center group/date';
+                
+                if (isFuture) {
+                    classes += ' text-gray-300 cursor-not-allowed bg-gray-50/80 opacity-50 border border-gray-100';
+                } else if (isToday) {
+                    classes += ' border-2 border-yellow-400 bg-gradient-to-br from-yellow-50 to-yellow-100/90 text-gray-900 shadow-md shadow-yellow-400/20';
+                } else {
+                    classes += ' text-gray-700 bg-white hover:bg-gradient-to-br hover:from-blue-50/90 hover:to-purple-50/90 border border-gray-200/70 hover:border-blue-300/70 hover:shadow-md hover:shadow-blue-500/10 hover:scale-105 active:scale-95';
+                }
+                
+                calendarHTML += `
+                    <button type="button" 
+                            onclick="selectDateRange('${dateStr}', event);"
+                            class="${classes}"
+                            ${isFuture ? 'disabled' : ''}
+                            data-date="${dateStr}"
+                            aria-label="${monthName} ${day}, ${year}">
+                        <span class="relative z-10">${day}</span>
+                        ${isToday ? '<span class="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-yellow-500 rounded-full shadow-sm"></span>' : ''}
+                        <span class="absolute inset-0 rounded-lg bg-gradient-to-br from-blue-500/0 to-purple-500/0 group-hover/date:from-blue-500/10 group-hover/date:to-purple-500/10 transition-all duration-200"></span>
+                    </button>
+                `;
+            }
+            
+            calendarHTML += '</div></div>';
+            monthDiv.innerHTML = calendarHTML;
+            
+            return monthDiv;
+        }
+
+        function updateSelectedRangeDisplay() {
+            const displayElement = document.getElementById('selectedRangeDisplay');
+            if (!displayElement) return;
+            
+            if (tempStartDate && tempEndDate) {
+                const days = calculateDays();
+                displayElement.innerHTML = `
+                    <span class="text-blue-600 font-extrabold">${formatDate(tempStartDate)}</span>
+                    <span class="mx-3 text-gray-400">→</span>
+                    <span class="text-purple-600 font-extrabold">${formatDate(tempEndDate)}</span>
+                    <span class="ml-4 text-lg text-gray-500 font-semibold">(${days} ${days === 1 ? 'day' : 'days'})</span>
+                `;
+            } else if (tempStartDate) {
+                displayElement.innerHTML = `
+                    <span class="text-blue-600 font-extrabold">${formatDate(tempStartDate)}</span>
+                    <span class="ml-4 text-base text-gray-500 font-semibold">Select end date...</span>
+                `;
+            }
+        }
+
+        function calculateDays() {
+            if (!tempStartDate || !tempEndDate) return 0;
+                const start = new Date(tempStartDate + 'T00:00:00');
+                const end = new Date(tempEndDate + 'T00:00:00');
+                const diffTime = Math.abs(end - start);
+            return Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        }
+
+        function updateCalendarHighlights() {
+            const calendarDays = document.querySelectorAll('.calendar-day[data-date]');
+            const today = new Date(todayStr + 'T00:00:00');
+            
+            calendarDays.forEach(day => {
+                const dayDate = day.getAttribute('data-date');
+                const dayDateObj = new Date(dayDate + 'T00:00:00');
+                
+                // Reset classes
+                day.classList.remove(
+                    'bg-gradient-to-br', 'from-blue-600', 'to-purple-600',
+                    'bg-blue-500', 'bg-blue-600',
+                    'text-white', 'ring-2', 'ring-blue-300', 'scale-110', 'font-bold'
+                );
+                
+                // Future dates - disabled styling
+                if (dayDateObj > today) {
+                    day.classList.add('opacity-50', 'cursor-not-allowed', 'bg-gray-100');
+                    day.disabled = true;
+                    return;
+                }
+                
+                day.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gray-100');
+                day.disabled = false;
+                
+                // Today indicator
+                if (dayDate === todayStr) {
+                    if (!day.classList.contains('border-2')) {
+                        day.classList.add('border-2', 'border-yellow-400');
+                    }
+                }
+                
+                // Selected range highlighting
+            if (tempStartDate && tempEndDate) {
+                    if (dayDate >= tempStartDate && dayDate <= tempEndDate) {
+                        if (dayDate === tempStartDate || dayDate === tempEndDate) {
+                            day.classList.add('bg-gradient-to-br', 'from-blue-600', 'to-purple-600', 'text-white', 'ring-2', 'ring-blue-300', 'scale-110', 'font-bold');
+                        } else {
+                            day.classList.add('bg-blue-500', 'text-white');
+                        }
+                    }
+                } else if (tempStartDate && dayDate === tempStartDate) {
+                    // Only start date selected
+                    day.classList.add('bg-gradient-to-br', 'from-blue-600', 'to-purple-600', 'text-white', 'ring-2', 'ring-blue-300', 'scale-110', 'font-bold');
+                }
+                
+                // Default hover state
+                if (!day.classList.contains('bg-blue-500') && !day.classList.contains('bg-blue-600') && !day.classList.contains('bg-gradient-to-br')) {
+                    day.classList.add('hover:bg-blue-50');
+                }
+            });
+        }
+
+        function applyDateRange(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            if (!tempStartDate || !tempEndDate) {
+                if (window.showToast) {
+                    window.showToast('Please select a complete date range', 'error');
+                } else {
+                alert('Please select a date range before applying.');
+                }
+                return;
+            }
+
+            // Validate
+            const start = new Date(tempStartDate + 'T00:00:00');
+            const end = new Date(tempEndDate + 'T00:00:00');
+            const today = new Date(todayStr + 'T00:00:00');
+
+            if (start > end) {
+                if (window.showToast) {
+                    window.showToast('Start date cannot be after end date', 'error');
+                } else {
+                    alert('Start date cannot be after end date.');
+                }
+                return;
+            }
+
+            if (end > today) {
+                if (window.showToast) {
+                    window.showToast('End date cannot be in the future', 'error');
+                } else {
+                    alert('End date cannot be in the future.');
+                }
+                return;
+            }
+
+            const url = new URL(window.location);
+            url.searchParams.set('start_date', tempStartDate);
+            url.searchParams.set('end_date', tempEndDate);
+            url.searchParams.delete('calendar_month');
+            url.searchParams.delete('calendar_year');
+            
+            // Show loading feedback
+            if (window.showToast) {
+                window.showToast('Loading attendance records...', 'info', 1500);
+            }
+            
+            window.location.href = url.toString();
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr + 'T00:00:00');
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function formatDateForInput(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('calendarModal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    toggleCalendar(e);
+                }
+            }
+        });
+
+        // Update next button state based on current month/year
+        function updateNextButtonState(month, year, todayMonth, todayYear) {
+            const nextBtn = document.getElementById('nextMonthBtn');
+            if (!nextBtn) return;
+            
+            // Disable next button if we're at or past current month
+            if (year >= todayYear && month >= todayMonth) {
+                nextBtn.disabled = true;
+                nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                nextBtn.classList.remove('hover:from-blue-100', 'hover:via-purple-100', 'hover:to-pink-100', 'hover:scale-110');
+            } else {
+                nextBtn.disabled = false;
+                nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                nextBtn.classList.add('hover:from-blue-100', 'hover:via-purple-100', 'hover:to-pink-100', 'hover:scale-110');
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSelectedRangeDisplay();
+            updateCalendarHighlights();
+            syncCustomInputs();
+            
+            // Initialize button states
+            const today = new Date('{{ today|date:"Y-m-d" }}' + 'T00:00:00');
+            const todayMonth = today.getMonth() + 1;
+            const todayYear = today.getFullYear();
+            updateNextButtonState(currentCalendarMonth, currentCalendarYear, todayMonth, todayYear);
+            updatePrevButtonState(currentCalendarMonth, currentCalendarYear);
+            
+            // Enhanced validation for custom date inputs to prevent dates before 2024
+            const customStartDate = document.getElementById('customStartDate');
+            const customEndDate = document.getElementById('customEndDate');
+            const minDate = '2024-01-01';
+            const minDateObj = new Date('2024-01-01T00:00:00');
+            
+            // Validate and enforce minimum date on start date input
+            if (customStartDate) {
+                // Set min attribute explicitly
+                customStartDate.setAttribute('min', minDate);
+                
+                // Validate on change
+                customStartDate.addEventListener('change', function() {
+                    if (this.value) {
+                        const selectedDate = new Date(this.value + 'T00:00:00');
+                        if (selectedDate < minDateObj) {
+                            if (window.showToast) {
+                                window.showToast('Start date cannot be before January 1, 2024', 'error');
+                            }
+                            this.value = '';
+                            this.setCustomValidity('Date must be on or after January 1, 2024');
+                        } else {
+                            this.setCustomValidity('');
+                        }
+                    }
+                });
+                
+                // Validate on input/blur for immediate feedback
+                customStartDate.addEventListener('input', function() {
+                    if (this.value && this.value < minDate) {
+                        this.setCustomValidity('Date must be on or after January 1, 2024');
+                    } else {
+                        this.setCustomValidity('');
+                    }
+                });
+            }
+            
+            // Validate and enforce minimum date on end date input
+            if (customEndDate) {
+                // Set min attribute explicitly
+                customEndDate.setAttribute('min', minDate);
+                
+                // Validate on change
+                customEndDate.addEventListener('change', function() {
+                    if (this.value) {
+                        const selectedDate = new Date(this.value + 'T00:00:00');
+                        if (selectedDate < minDateObj) {
+                            if (window.showToast) {
+                                window.showToast('End date cannot be before January 1, 2024', 'error');
+                            }
+                            this.value = '';
+                            this.setCustomValidity('Date must be on or after January 1, 2024');
+                        } else {
+                            this.setCustomValidity('');
+                        }
+                    }
+                });
+                
+                // Validate on input/blur for immediate feedback
+                customEndDate.addEventListener('input', function() {
+                    if (this.value && this.value < minDate) {
+                        this.setCustomValidity('Date must be on or after January 1, 2024');
+                    } else {
+                        this.setCustomValidity('');
+                    }
+                });
+            }
+        });
+    </script>
+    <style>
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.96) translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        #calendarModalContent {
+            animation: modalFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        
+        #calendarModal:not(.hidden) {
+            display: flex !important;
+            align-items: flex-start !important;
+            justify-content: center !important;
+            padding-top: 2rem !important;
+        }
+        
+        #calendarModal:not(.hidden) #calendarModalContent {
+            animation: modalFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        
+        /* Ensure modal is always centered */
+        #calendarModal {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+        }
+        
+        /* Prevent horizontal scroll */
+        #calendarModal,
+        #calendarModalContent,
+        #calendarModalContent aside,
+        #calendarModalContent main {
+            overflow-x: hidden !important;
+        }
+        
+        /* Month/Year Selector Styling - Gradient purple color matching gradient */
+        select.month-select {
+            color: #9333ea !important; /* Purple from gradient (blue #2563eb -> purple #9333ea -> pink #ec4899) */
+            border: none !important;
+            box-shadow: none !important;
+            padding-right: 4rem !important;
+            background-image: none !important;
+            background: transparent !important;
+            -webkit-text-fill-color: #9333ea !important;
+            text-align: center !important;
+            width: auto !important;
+            min-width: 160px !important;
+            overflow: visible !important;
+        }
+        
+        /* Keep same gradient purple color on hover */
+        select.month-select:hover {
+            color: #9333ea !important;
+            background: transparent !important;
+            -webkit-text-fill-color: #9333ea !important;
+        }
+        
+        /* Ensure gradient purple color is always visible */
+        select.month-select:not(:focus) {
+            color: #9333ea !important;
+            -webkit-text-fill-color: #9333ea !important;
+        }
+        
+        .month-select:focus {
+            background: white !important;
+            border: 2px solid #2563eb !important;
+            border-radius: 0.75rem !important;
+            color: #1f2937 !important;
+            -webkit-background-clip: unset !important;
+            background-clip: unset !important;
+            -webkit-text-fill-color: #1f2937 !important;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+        }
+        
+        .year-input {
+            background: linear-gradient(to right, #2563eb, #9333ea, #ec4899) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            color: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        
+        .year-input:hover {
+            background: linear-gradient(to right, #2563eb, #9333ea, #ec4899) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .year-input:focus {
+            background: white !important;
+            border: 2px solid #2563eb !important;
+            border-radius: 0.75rem !important;
+            color: #1f2937 !important;
+            -webkit-background-clip: unset !important;
+            background-clip: unset !important;
+            -webkit-text-fill-color: #1f2937 !important;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+        }
+        
+        /* Enhanced Professional Month Dropdown Options Styling */
+        .month-select option {
+            background: #ffffff !important;
+            color: #374151 !important;
+            padding: 0.875rem 1.5rem !important;
+            font-weight: 500 !important;
+            font-size: 0.95rem !important;
+            border-radius: 0.5rem !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            margin: 0.125rem 0.5rem !important;
+            cursor: pointer !important;
+            border: 1px solid transparent !important;
+            box-shadow: none !important;
+        }
+        
+        .month-select option:hover {
+            background: linear-gradient(to right, #eff6ff, #dbeafe, #e9d5ff) !important;
+            color: #1e40af !important;
+            font-weight: 600 !important;
+            border-color: #93c5fd !important;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12) !important;
+        }
+        
+        .month-select option:checked,
+        .month-select option[selected] {
+            background: linear-gradient(135deg, #2563eb 0%, #9333ea 50%, #ec4899 100%) !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            box-shadow: 0 4px 12px rgba(147, 51, 234, 0.35) !important;
+            border-color: #9333ea !important;
+        }
+        
+        .month-select option:focus {
+            background: linear-gradient(to right, #dbeafe, #e9d5ff) !important;
+            color: #1e40af !important;
+            outline: 2px solid #3b82f6 !important;
+            outline-offset: 2px !important;
+            font-weight: 600 !important;
+        }
+        
+        
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .scrollbar-thumb-blue-300::-webkit-scrollbar-thumb {
+            background-color: #93c5fd;
+            border-radius: 3px;
+        }
+        
+        .scrollbar-thumb-blue-300::-webkit-scrollbar-thumb:hover {
+            background-color: #60a5fa;
+        }
+        
+        /* Ensure text doesn't overflow */
+        .preset-button-text {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        .calendar-month {
+            backdrop-filter: blur(10px);
+        }
+        
+        .calendar-month:hover {
+            transform: translateY(-2px);
+        }
+        
+        .calendar-day {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+        
+        .calendar-day:hover:not(:disabled) {
+            transform: scale(1.05);
+            z-index: 5;
+        }
+        
+        .calendar-day:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+        
+        .calendar-day:focus-visible {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+        
+        /* Selected date range styling */
+        .calendar-day.selected-start,
+        .calendar-day.selected-end {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%) !important;
+            color: white !important;
+            border-color: #2563eb !important;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+        }
+        
+        .calendar-day.in-range {
+            background: linear-gradient(135deg, #dbeafe 0%, #e9d5ff 100%) !important;
+            border-color: #93c5fd !important;
+        }
+        
+        /* Enhanced Table Styling - Smooth Scrolling and Sticky Columns */
+        .smooth-scroll {
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: #93c5fd #e5e7eb;
+        }
+        
+        .smooth-scroll::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .smooth-scroll::-webkit-scrollbar-track {
+            background: #f3f4f6;
+            border-radius: 4px;
+        }
+        
+        .smooth-scroll::-webkit-scrollbar-thumb {
+            background: linear-gradient(to right, #93c5fd, #a78bfa);
+            border-radius: 4px;
+        }
+        
+        .smooth-scroll::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to right, #60a5fa, #8b5cf6);
+        }
+        
+        /* Sticky Employee Name Column - Enhanced */
+        .modern-table th:first-child,
+        .modern-table td:first-child {
+            position: -webkit-sticky !important;
+            position: sticky !important;
+            left: 0 !important;
+            z-index: 50 !important;
+            background-color: white !important;
+            background: white !important;
+        }
+        
+        .modern-table thead th:first-child {
+            background: linear-gradient(to right, #f9fafb, #eff6ff) !important;
+            background-color: #f9fafb !important;
+            z-index: 60 !important;
+            top: 0 !important;
+        }
+        
+        /* Ensure sticky column maintains background on all states */
+        .modern-table tbody tr td:first-child {
+            background-color: white !important;
+            background: white !important;
+        }
+        
+        .modern-table tbody tr:hover td:first-child {
+            background-color: #eff6ff !important;
+            background: #eff6ff !important;
+        }
+        
+        .modern-table tbody tr:nth-child(even) td:first-child {
+            background-color: white !important;
+            background: white !important;
+        }
+        
+        .modern-table tbody tr:nth-child(even):hover td:first-child {
+            background-color: #eff6ff !important;
+            background: #eff6ff !important;
+        }
+        
+        /* Add shadow to sticky column for better visibility */
+        .modern-table th:first-child,
+        .modern-table td:first-child {
+            box-shadow: 4px 0 8px -2px rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        /* Professional Table Row Hover Effect */
+        .modern-table tbody tr {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .modern-table tbody tr:hover {
+            background-color: rgba(239, 246, 255, 0.5) !important;
+        }
+        
+        .modern-table tbody tr:hover td:not(:first-child) {
+            background-color: rgba(239, 246, 255, 0.5) !important;
+        }
+        
+        /* Enhanced Table Cell Styling */
+        .modern-table td {
+            vertical-align: middle;
+            padding: 1rem 0.75rem;
+        }
+        
+        /* Ensure table container allows sticky positioning */
+        .overflow-x-auto {
+            position: relative;
+        }
+    </style>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
 </body>
 </html>

@@ -1,0 +1,49 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Vertical Blue to Purple Gradient for Right Pill -->
+    <linearGradient id="iconRightPillGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#818cf8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a78bfa;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Enhanced Shadow Filter -->
+    <filter id="iconShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.5"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Two Pill-Shaped Forms - Centered -->
+  <g id="symbol" transform="translate(8, 6)">
+    <!-- Left Pill - Solid Darker Blue: Straight left edge, curved right edge, rounded top/bottom -->
+    <path d="M 0 6 
+             L 0 0 
+             L 20 0 
+             A 6 6 0 0 1 26 6 
+             L 26 46 
+             A 6 6 0 0 1 20 52 
+             L 0 52 
+             Z" 
+          fill="#1e40af" 
+          filter="url(#iconShadow)"/>
+    
+    <!-- Right Pill - Blue to Purple Vertical Gradient: Curved left edge, straight right edge, rounded top/bottom -->
+    <path d="M 20 0 
+             A 6 6 0 0 1 26 6 
+             L 26 46 
+             A 6 6 0 0 1 20 52 
+             L 48 52 
+             L 48 0 
+             Z" 
+          fill="url(#iconRightPillGradient)"
+          filter="url(#iconShadow)"/>
+  </g>
+</svg>
