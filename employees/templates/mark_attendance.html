@@ -35,9 +35,8 @@
         
         #calendarModal:not(.hidden) {
             display: flex !important;
-            align-items: flex-start !important;
+            align-items: center !important;
             justify-content: center !important;
-            padding-top: 2rem !important;
         }
         
         #calendarModal:not(.hidden) #calendarModalContent {
@@ -51,11 +50,25 @@
             left: 0 !important;
             right: 0 !important;
             bottom: 0 !important;
+            min-height: 100vh !important;
+            min-height: 100dvh !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
         
         /* Override any conflicting styles when modal is shown */
-        #calendarModal[style*="display: flex"] {
+        #calendarModal[style*="display: flex"],
+        #calendarModal:not(.hidden) {
             display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        
+        /* Ensure modal content stays centered and scrollable */
+        #calendarModalContent {
+            max-height: 90vh !important;
+            max-height: 90dvh !important;
+            margin: auto !important;
         }
     </style>
 </head>
@@ -83,27 +96,35 @@
                 </div>
             </div>
 
-            <nav class="sidebar-nav">
-                <a href="{% url 'dashboard' %}" class="sidebar-link">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
+                <a href="{% url 'dashboard' %}" 
+                   class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                   aria-current="{% if request.resolver_match.url_name == 'dashboard' %}page{% endif %}">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                     </svg>
                     <span>Dashboard</span>
                 </a>
-                <a href="{% url 'employee_list' %}" class="sidebar-link">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="{% url 'employee_list' %}" 
+                   class="sidebar-link {% if request.resolver_match.url_name == 'employee_list' or request.resolver_match.url_name == 'employee_detail' or request.resolver_match.url_name == 'employee_create' or request.resolver_match.url_name == 'employee_edit' %}active{% endif %}"
+                   aria-current="{% if request.resolver_match.url_name == 'employee_list' or request.resolver_match.url_name == 'employee_detail' or request.resolver_match.url_name == 'employee_create' or request.resolver_match.url_name == 'employee_edit' %}page{% endif %}">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                     </svg>
                     <span>Employees</span>
                 </a>
-                <a href="{% url 'attendance_list' %}" class="sidebar-link">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="{% url 'attendance_list' %}" 
+                   class="sidebar-link {% if request.resolver_match.url_name == 'attendance_list' or request.resolver_match.url_name == 'add_attendance' or request.resolver_match.url_name == 'delete_attendance' %}active{% endif %}"
+                   aria-current="{% if request.resolver_match.url_name == 'attendance_list' or request.resolver_match.url_name == 'add_attendance' or request.resolver_match.url_name == 'delete_attendance' %}page{% endif %}">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                     <span>Attendance Records</span>
                 </a>
-                <a href="{% url 'mark_attendance' %}" class="sidebar-link active">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <a href="{% url 'mark_attendance' %}" 
+                   class="sidebar-link {% if request.resolver_match.url_name == 'mark_attendance' %}active{% endif %}"
+                   aria-current="{% if request.resolver_match.url_name == 'mark_attendance' %}page{% endif %}">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
                     </svg>
                     <span>Mark Attendance</span>
@@ -134,11 +155,27 @@
                         <p class="text-base font-semibold text-gray-800">{{ user.username }}</p>
                     </div>
                 </div>
-                <nav class="hidden md:flex items-center space-x-1">
-                    <a href="{% url 'dashboard' %}" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">📊 Dashboard</a>
-                    <a href="{% url 'employee_list' %}" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">👥 Employees</a>
-                    <a href="{% url 'attendance_list' %}" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">📋 Attendance</a>
-                    <a href="{% url 'mark_attendance' %}" class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg transition-all duration-200">✅ Mark Attendance</a>
+                <nav class="hidden md:flex items-center space-x-1" role="navigation" aria-label="Main navigation">
+                    <a href="{% url 'dashboard' %}" 
+                       class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 {% if request.resolver_match.url_name == 'dashboard' %}text-blue-600 bg-blue-50 font-bold{% else %}text-gray-700 hover:text-blue-600 hover:bg-blue-50{% endif %}"
+                       aria-current="{% if request.resolver_match.url_name == 'dashboard' %}page{% endif %}">
+                        <span aria-hidden="true">📊</span> Dashboard
+                    </a>
+                    <a href="{% url 'employee_list' %}" 
+                       class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 {% if request.resolver_match.url_name == 'employee_list' or request.resolver_match.url_name == 'employee_detail' or request.resolver_match.url_name == 'employee_create' or request.resolver_match.url_name == 'employee_edit' %}text-blue-600 bg-blue-50 font-bold{% else %}text-gray-700 hover:text-blue-600 hover:bg-blue-50{% endif %}"
+                       aria-current="{% if request.resolver_match.url_name == 'employee_list' or request.resolver_match.url_name == 'employee_detail' or request.resolver_match.url_name == 'employee_create' or request.resolver_match.url_name == 'employee_edit' %}page{% endif %}">
+                        <span aria-hidden="true">👥</span> Employees
+                    </a>
+                    <a href="{% url 'attendance_list' %}" 
+                       class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 {% if request.resolver_match.url_name == 'attendance_list' or request.resolver_match.url_name == 'add_attendance' or request.resolver_match.url_name == 'delete_attendance' %}text-blue-600 bg-blue-50 font-bold{% else %}text-gray-700 hover:text-blue-600 hover:bg-blue-50{% endif %}"
+                       aria-current="{% if request.resolver_match.url_name == 'attendance_list' or request.resolver_match.url_name == 'add_attendance' or request.resolver_match.url_name == 'delete_attendance' %}page{% endif %}">
+                        <span aria-hidden="true">📋</span> Attendance
+                    </a>
+                    <a href="{% url 'mark_attendance' %}" 
+                       class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 {% if request.resolver_match.url_name == 'mark_attendance' %}text-blue-600 bg-blue-50 font-bold{% else %}text-gray-700 hover:text-blue-600 hover:bg-blue-50{% endif %}"
+                       aria-current="{% if request.resolver_match.url_name == 'mark_attendance' %}page{% endif %}">
+                        <span aria-hidden="true">✅</span> Mark Attendance
+                    </a>
                 </nav>
             </div>
             <div class="flex items-center space-x-4">
@@ -154,6 +191,45 @@
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-8">
+        <!-- Messages -->
+        {% if messages %}
+        <div class="mb-6 space-y-3">
+            {% for message in messages %}
+            <div class="p-4 rounded-lg shadow-md flex items-center justify-between {% if message.tags == 'success' %}bg-green-50 border border-green-200{% elif message.tags == 'error' or message.tags == 'danger' %}bg-red-50 border border-red-200{% elif message.tags == 'warning' %}bg-yellow-50 border border-yellow-200{% else %}bg-blue-50 border border-blue-200{% endif %}">
+                <div class="flex items-center">
+                    {% if message.tags == 'success' %}
+                    <svg class="w-5 h-5 mr-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="font-semibold text-green-800">{{ message }}</span>
+                    {% elif message.tags == 'error' or message.tags == 'danger' %}
+                    <svg class="w-5 h-5 mr-3 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="font-semibold text-red-800">{{ message }}</span>
+                    {% elif message.tags == 'warning' %}
+                    <svg class="w-5 h-5 mr-3 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="font-semibold text-yellow-800">{{ message }}</span>
+                    {% else %}
+                    <svg class="w-5 h-5 mr-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="font-semibold text-blue-800">{{ message }}</span>
+                    {% endif %}
+                </div>
+                <button onclick="this.closest('div[class*=\"border\"]').remove()" 
+                        aria-label="Dismiss message" 
+                        class="ml-4 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 rounded p-1 transition-colors">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
         <div class="card fade-in p-6 md:p-8">
             <div class="mb-8">
                 <div class="flex items-center justify-between mb-2">
@@ -167,8 +243,13 @@
             <div class="mb-6">
                 <div class="flex justify-between items-center mb-3">
                     
-                    <button onclick="toggleCalendar(event)" type="button" class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button onclick="toggleCalendar(event)" 
+                            type="button" 
+                            aria-label="Open date picker"
+                            aria-expanded="false"
+                            aria-controls="calendarModal"
+                            class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                         </svg>
                         Select Date
@@ -181,72 +262,118 @@
                     <p id="currentDateDisplay" class="text-3xl font-extrabold text-gray-900">{{ selected_date|date:"l, F j, Y" }}</p>
                 </div>
 
-                <!-- Calendar Modal - Top Aligned, Horizontally Centered -->
-                <div id="calendarModal" class="fixed inset-0 bg-black/60 backdrop-blur-md hidden z-[1050] flex items-start justify-center p-4 transition-all duration-300 ease-out overflow-y-auto" onclick="handleModalClick(event)" style="align-items: flex-start; justify-content: center;">
-                    <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full overflow-hidden border border-gray-200 transform transition-all duration-300" onclick="event.stopPropagation()" id="calendarModalContent">
-                            <!-- Header -->
-                            <div class="bg-gradient-to-r from-blue-600 to-blue-700 p-6 flex justify-between items-center">
-                                <h2 class="text-2xl font-extrabold text-white tracking-tight">Select Date for This Week</h2>
-                                <button onclick="closeCalendar()" type="button" class="text-white hover:text-gray-200 transition-colors">
-                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                </svg>
-                                            </button>
-                                        </div>
+                <!-- Calendar Modal - Compact and Centered -->
+                <div id="calendarModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-[1050] flex items-center justify-center p-4 transition-all duration-300 ease-out" onclick="handleModalClick(event)" style="min-height: 100vh; min-height: 100dvh;">
+                    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-200 transform transition-all duration-300" onclick="event.stopPropagation()" id="calendarModalContent" style="max-height: 90vh; max-height: 90dvh; overflow-y: auto;">
+                            <!-- Header - Compact -->
+                            <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-4 flex justify-between items-center">
+                                <h2 id="calendarTitle" class="text-lg font-bold text-white tracking-tight">Select Date for This Week</h2>
+                                <button onclick="closeCalendar()" 
+                                        type="button" 
+                                        aria-label="Close calendar"
+                                        class="text-white hover:text-gray-200 transition-colors p-1 rounded-lg hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
                             
                                 <!-- Calendar Section -->
-                            <div class="p-8">
-                                <!-- Quick Select Buttons -->
-                                <div class="mb-6 flex gap-3">
-                                    <button onclick="selectQuickDate('today', event)" type="button" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors font-semibold">Today</button>
-                                    <button onclick="selectQuickDate('yesterday', event)" type="button" class="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors font-semibold">Yesterday</button>
-                                    <button onclick="selectQuickDate('dayBefore', event)" type="button" class="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors font-semibold">Day Before</button>
-                                    </div>
+                            <div class="p-6">
+                                <!-- Quick Select Buttons - Compact -->
+                                <div class="mb-5 flex gap-2">
+                                    <button onclick="selectQuickDate('today', event)" 
+                                            type="button" 
+                                            id="quickToday" 
+                                            aria-label="Select today's date"
+                                            class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all font-semibold text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Today</button>
+                                    <button onclick="selectQuickDate('yesterday', event)" 
+                                            type="button" 
+                                            id="quickYesterday" 
+                                            aria-label="Select yesterday's date"
+                                            class="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition-all font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">Yesterday</button>
+                                    <button onclick="selectQuickDate('dayBefore', event)" 
+                                            type="button" 
+                                            id="quickDayBefore" 
+                                            aria-label="Select day before yesterday's date"
+                                            class="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition-all font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">Day Before</button>
+                                </div>
                                 
-                                <!-- Week Calendar -->
-                                <div class="mb-6">
-                                    <h3 class="text-lg font-bold text-blue-700 mb-4 text-center">{{ calendar_dates.0.month_name }} {{ calendar_dates.0.year }}</h3>
-                                    <div class="calendar-grid text-center">
-                                        <div class="calendar-header font-bold">Mon</div>
-                                        <div class="calendar-header font-bold">Tue</div>
-                                        <div class="calendar-header font-bold">Wed</div>
-                                        <div class="calendar-header font-bold">Thu</div>
-                                        <div class="calendar-header font-bold">Fri</div>
-                                        <div class="calendar-header font-bold">Sat</div>
-                                        <div class="calendar-header font-bold">Sun</div>
+                                <!-- Week Calendar - Compact -->
+                                <div class="mb-5">
+                                    <h3 class="text-base font-bold text-gray-800 mb-3 text-center">{{ calendar_dates.0.month_name }} {{ calendar_dates.0.year }}</h3>
+                                    <div class="grid grid-cols-7 gap-2">
+                                        <!-- Day Headers -->
+                                        <div class="text-xs font-bold text-gray-500 uppercase tracking-wider py-1 text-center">Mon</div>
+                                        <div class="text-xs font-bold text-gray-500 uppercase tracking-wider py-1 text-center">Tue</div>
+                                        <div class="text-xs font-bold text-gray-500 uppercase tracking-wider py-1 text-center">Wed</div>
+                                        <div class="text-xs font-bold text-gray-500 uppercase tracking-wider py-1 text-center">Thu</div>
+                                        <div class="text-xs font-bold text-gray-500 uppercase tracking-wider py-1 text-center">Fri</div>
+                                        <div class="text-xs font-bold text-gray-500 uppercase tracking-wider py-1 text-center">Sat</div>
+                                        <div class="text-xs font-bold text-gray-500 uppercase tracking-wider py-1 text-center">Sun</div>
+                                        
+                                        <!-- Week Days -->
                                         {% for month_data in calendar_dates %}
-                                                {% for week in month_data.weeks %}
-                                                    {% for day in week %}
-                                                        {% if day %}
-                                                        {% with date_str=day|date:"Y-m-d" %}
-                                                        <button onclick="selectDate('{{ date_str }}', event)" type="button"
-                                                                class="calendar-day-btn {% if day > today %}opacity-50 cursor-not-allowed bg-gray-100{% elif day == selected_date %}bg-blue-600 text-white font-bold{% else %}hover:bg-blue-100{% endif %}"
-                                                                    {% if day > today %}disabled{% endif %}>
-                                                                {{ day.day }}
-                                                            {% if day == today %}
-                                                                <span class="block text-xs">Today</span>
-                                                            {% endif %}
-                                                            </button>
-                                                        {% endwith %}
-                                                        {% else %}
-                                                            <div></div>
-                                                        {% endif %}
-                                                    {% endfor %}
-                                                {% endfor %}
+                                            {% for day_data in month_data.week_dates %}
+                                                {% with day=day_data.date day_num=day_data.day date_str=day_data.date_str is_today=day_data.is_today is_selected=day_data.is_selected is_future=day_data.is_future is_weekend=day_data.is_weekend is_holiday=day_data.is_holiday is_working=day_data.is_working holiday_name=day_data.holiday_name %}
+                                                <button onclick="selectDate('{{ date_str }}', event)" 
+                                                        type="button"
+                                                        aria-label="Select date {{ date_str }}{% if is_weekend %} (Weekend - not available){% elif is_holiday %} ({{ holiday_name }} - not available){% endif %}"
+                                                        aria-disabled="{% if is_future or not is_working %}true{% else %}false{% endif %}"
+                                                        class="relative group flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                                                               {% if not is_working or is_future %}bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed pointer-events-none{% elif is_selected %}bg-gradient-to-br from-blue-500 to-blue-600 border-blue-600 text-white shadow-lg scale-105{% elif is_today %}bg-blue-50 border-blue-300 hover:bg-blue-100{% else %}bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50{% endif %}"
+                                                        {% if not is_working or is_future %}disabled{% endif %}
+                                                        data-date="{{ date_str }}"
+                                                        data-is-weekend="{% if is_weekend %}true{% else %}false{% endif %}"
+                                                        data-is-holiday="{% if is_holiday %}true{% else %}false{% endif %}"
+                                                        data-is-working="{% if is_working %}true{% else %}false{% endif %}"
+                                                        style="pointer-events: {% if not is_working or is_future %}none{% else %}auto{% endif %};">
+                                                    <span class="text-base font-bold {% if is_selected %}text-white{% elif is_weekend %}text-red-400{% elif is_holiday %}text-orange-400{% elif is_today %}text-blue-600{% else %}text-gray-700{% endif %}">
+                                                        {{ day_num }}
+                                                    </span>
+                                                    {% if is_today %}
+                                                        <span class="text-xs font-medium mt-0.5 {% if is_selected %}text-blue-100{% else %}text-blue-500{% endif %}">Today</span>
+                                                    {% elif is_weekend %}
+                                                        <span class="text-xs font-medium mt-0.5 text-red-400">Weekend</span>
+                                                    {% elif is_holiday and holiday_name %}
+                                                        <span class="text-xs font-medium mt-0.5 text-orange-400 truncate max-w-full" title="{{ holiday_name }}">Holiday</span>
+                                                    {% endif %}
+                                                    {% if is_selected %}
+                                                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-blue-700 rounded-full"></div>
+                                                    {% endif %}
+                                                </button>
+                                                {% endwith %}
+                                            {% endfor %}
                                         {% endfor %}
                                     </div>
                                 </div>
                                 
-                                <!-- Selected Date Display -->
-                                <div class="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-100">
-                                        <h4 class="font-semibold text-gray-700 mb-2">Selected Date:</h4>
-                                        <p id="selectedDateDisplay" class="text-lg font-semibold text-blue-700">{{ selected_date|date:"l, F j, Y" }}</p>
+                                <!-- Selected Date Display - Compact -->
+                                <div class="mb-5 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Selected Date</p>
+                                            <p id="selectedDateDisplay" class="text-base font-bold text-gray-900 mt-0.5">{{ selected_date|date:"l, F j, Y" }}</p>
+                                        </div>
+                                        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
                                     </div>
+                                </div>
                                 
-                                <!-- Action Buttons -->
-                                <div class="flex justify-end space-x-4 mt-6">
-                                    <button onclick="closeCalendar()" type="button" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors font-semibold">Cancel</button>
-                                    <button onclick="applySelectedDate(event)" type="button" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold">Select Date</button>
+                                <!-- Action Buttons - Compact -->
+                                <div class="flex justify-end gap-3">
+                                    <button onclick="closeCalendar()" 
+                                            type="button" 
+                                            aria-label="Cancel date selection"
+                                            class="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">Cancel</button>
+                                    <button onclick="applySelectedDate(event)" 
+                                            type="button" 
+                                            aria-label="Apply selected date"
+                                            class="px-5 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all font-semibold text-sm shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Select Date</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -283,7 +410,7 @@
                                     {% endif %}
                                     </div>
                                 </td>
-                                <td class="text-gray-800 font-semibold">{{ data.employee.department }}</td>
+                                <td class="text-gray-800 font-semibold">{{ data.employee.department.name|default:"No Department" }}</td>
                                 <td>
                                     {% if data.attendance %}
                                         <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-bold {% if data.attendance.status == 'present' %}bg-green-100 text-green-900{% else %}bg-red-100 text-red-900{% endif %}">
@@ -378,18 +505,14 @@
             const isHidden = modal.classList.contains('hidden') || modal.style.display === 'none';
             
             if (isHidden) {
-                // Opening modal - top aligned, horizontally centered
+                // Opening modal - centered
                 modal.classList.remove('hidden');
                 modal.removeAttribute('hidden');
                 modal.style.display = 'flex';
                 modal.style.visibility = 'visible';
-                modal.style.alignItems = 'flex-start';
+                modal.style.alignItems = 'center';
                 modal.style.justifyContent = 'center';
-                modal.style.paddingTop = '2rem';
                 document.body.style.overflow = 'hidden';
-                
-                // Scroll to top
-                modal.scrollTop = 0;
                 
                 // Trigger animation
                 if (modalContent) {
@@ -428,16 +551,86 @@
                 event.stopPropagation();
             }
             
+            // Get the button element (handle clicks on child elements)
+            const button = event ? (event.target.closest('button[data-date]') || event.currentTarget) : null;
+            if (!button) {
+                console.error('Button not found');
+                return;
+            }
+            
+            // Check if button is disabled
+            if (button.disabled || button.hasAttribute('disabled')) {
+                return;
+            }
+            
+            // Get date from button's data attribute if not provided
+            if (!dateStr) {
+                dateStr = button.getAttribute('data-date');
+            }
+            
+            if (!dateStr) {
+                console.error('Date string not found');
+                return;
+            }
+            
             const selectedDateObj = new Date(dateStr + 'T00:00:00');
             const today = new Date('{{ today|date:"Y-m-d" }}' + 'T00:00:00');
+            today.setHours(0, 0, 0, 0);
+            selectedDateObj.setHours(0, 0, 0, 0);
 
-            if (selectedDateObj > today) {
+            // Check if date is in the current week
+            // getDay() returns 0 for Sunday, 1 for Monday, etc.
+            const todayDay = today.getDay();
+            const daysSinceMonday = todayDay === 0 ? 6 : todayDay - 1;
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - daysSinceMonday);
+            weekStart.setHours(0, 0, 0, 0);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            weekEnd.setHours(23, 59, 59, 999);
+
+            // Only allow dates within the current week
+            if (selectedDateObj < weekStart || selectedDateObj > weekEnd) {
+                if (window.showToast) {
+                    window.showToast('Please select a date from the current week', 'warning', 2000);
+                }
+                return;
+            }
+
+            // Check if date is a weekend (Saturday=5, Sunday=6)
+            const dayOfWeek = selectedDateObj.getDay();
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                const dayName = dayOfWeek === 0 ? 'Sunday' : 'Saturday';
+                if (window.showToast) {
+                    window.showToast(`Attendance cannot be marked on ${dayName}s (weekends)`, 'error', 3000);
+                }
+                return;
+            }
+
+            // Check if button has data attribute indicating it's a weekend or holiday
+            const isWeekend = button.getAttribute('data-is-weekend') === 'true';
+            const isHoliday = button.getAttribute('data-is-holiday') === 'true';
+            const isWorking = button.getAttribute('data-is-working') === 'true';
+            if (!isWorking || isWeekend || isHoliday) {
+                const reason = isWeekend ? 'weekend' : isHoliday ? 'holiday' : 'non-working day';
+                if (window.showToast) {
+                    window.showToast(`Attendance cannot be marked on ${reason}`, 'error', 3000);
+                }
                 return;
             }
 
             selectedDate = dateStr;
             updateSelectedDateDisplay();
             updateCalendarDisplay();
+            updateQuickDateButtons();
+            
+            // Visual feedback
+            if (button) {
+                button.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    button.style.transform = '';
+                }, 150);
+            }
         }
 
         function selectQuickDate(option, event) {
@@ -463,9 +656,94 @@
                     break;
             }
 
-            selectedDate = formatDateForInput(targetDate);
+            // Check if date is in the current week
+            // getDay() returns 0 for Sunday, 1 for Monday, etc.
+            const todayDay = today.getDay();
+            const daysSinceMonday = todayDay === 0 ? 6 : todayDay - 1;
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - daysSinceMonday);
+            weekStart.setHours(0, 0, 0, 0);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            weekEnd.setHours(23, 59, 59, 999);
+
+            if (targetDate < weekStart || targetDate > weekEnd) {
+                if (window.showToast) {
+                    window.showToast('Selected date is outside the current week', 'warning', 2000);
+                }
+                return;
+            }
+
+            // Check if target date is a weekend (Saturday=5, Sunday=6)
+            const dayOfWeek = targetDate.getDay();
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                const dayName = dayOfWeek === 0 ? 'Sunday' : 'Saturday';
+                if (window.showToast) {
+                    window.showToast(`Attendance cannot be marked on ${dayName}s (weekends)`, 'error', 3000);
+                }
+                return;
+            }
+
+            // Find the button for this date and check if it's a working day
+            const dateStr = formatDateForInput(targetDate);
+            const dateButton = document.querySelector(`button[data-date="${dateStr}"]`);
+            if (dateButton) {
+                const isWorking = dateButton.getAttribute('data-is-working') === 'true';
+                const isHoliday = dateButton.getAttribute('data-is-holiday') === 'true';
+                if (!isWorking || isHoliday) {
+                    const reason = isHoliday ? 'holiday' : 'non-working day';
+                    if (window.showToast) {
+                        window.showToast(`Attendance cannot be marked on ${reason}`, 'error', 3000);
+                    }
+                    return;
+                }
+            }
+
+            selectedDate = dateStr;
             updateSelectedDateDisplay();
             updateCalendarDisplay();
+            updateQuickDateButtons();
+        }
+        
+        function updateQuickDateButtons() {
+            const today = new Date('{{ today|date:"Y-m-d" }}' + 'T00:00:00');
+            const selectedDateObj = new Date(selectedDate + 'T00:00:00');
+            
+            // Reset all quick buttons
+            const quickToday = document.getElementById('quickToday');
+            const quickYesterday = document.getElementById('quickYesterday');
+            const quickDayBefore = document.getElementById('quickDayBefore');
+            
+            if (quickToday) {
+                const todayStr = formatDateForInput(today);
+                if (selectedDate === todayStr) {
+                    quickToday.className = 'flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all font-semibold text-sm shadow-sm';
+                } else {
+                    quickToday.className = 'flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition-all font-semibold text-sm';
+                }
+            }
+            
+            if (quickYesterday) {
+                const yesterday = new Date(today);
+                yesterday.setDate(today.getDate() - 1);
+                const yesterdayStr = formatDateForInput(yesterday);
+                if (selectedDate === yesterdayStr) {
+                    quickYesterday.className = 'flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all font-semibold text-sm shadow-sm';
+                } else {
+                    quickYesterday.className = 'flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition-all font-semibold text-sm';
+                }
+            }
+            
+            if (quickDayBefore) {
+                const dayBefore = new Date(today);
+                dayBefore.setDate(today.getDate() - 2);
+                const dayBeforeStr = formatDateForInput(dayBefore);
+                if (selectedDate === dayBeforeStr) {
+                    quickDayBefore.className = 'flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all font-semibold text-sm shadow-sm';
+                } else {
+                    quickDayBefore.className = 'flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition-all font-semibold text-sm';
+                }
+            }
         }
 
         function updateSelectedDateDisplay() {
@@ -477,30 +755,67 @@
         function updateCalendarDisplay() {
             // Update button styles based on selection
             try {
-            const buttons = document.querySelectorAll('button[onclick*="selectDate"]');
-            buttons.forEach(button => {
-                    const onclickAttr = button.getAttribute('onclick');
-                    if (!onclickAttr) return;
+                const buttons = document.querySelectorAll('button[data-date]');
+                const today = new Date('{{ today|date:"Y-m-d" }}' + 'T00:00:00');
+                today.setHours(0, 0, 0, 0);
+                
+                // Get current week range
+                // getDay() returns 0 for Sunday, 1 for Monday, etc.
+                const todayDay = today.getDay();
+                const daysSinceMonday = todayDay === 0 ? 6 : todayDay - 1;
+                const weekStart = new Date(today);
+                weekStart.setDate(today.getDate() - daysSinceMonday);
+                weekStart.setHours(0, 0, 0, 0);
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekStart.getDate() + 6);
+                weekEnd.setHours(23, 59, 59, 999);
+                
+                buttons.forEach(button => {
+                    const dateStr = button.getAttribute('data-date');
+                    if (!dateStr) return;
                     
-                    const match = onclickAttr.match(/'([^']+)'/);
-                    if (!match || !match[1]) return;
+                    const isSelected = dateStr === selectedDate;
+                    const dateObj = new Date(dateStr + 'T00:00:00');
+                    dateObj.setHours(0, 0, 0, 0);
+                    const isToday = dateObj.getTime() === today.getTime();
+                    const isFuture = dateObj > today;
+                    const isInWeek = dateObj >= weekStart && dateObj <= weekEnd;
                     
-                    const dateStr = match[1];
-                const isSelected = dateStr === selectedDate;
-
-                    // Remove all styling classes
-                    button.classList.remove('bg-blue-600', 'text-white', 'font-bold', 'bg-gray-100', 'opacity-50');
+                    // Reset all classes
+                    button.className = 'relative group flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all duration-200';
                     
-                if (isSelected) {
-                        button.classList.add('bg-blue-600', 'text-white', 'font-bold');
-                    } else {
-                        const dateObj = new Date(dateStr + 'T00:00:00');
-                        const today = new Date('{{ today|date:"Y-m-d" }}' + 'T00:00:00');
-                        if (dateObj > today) {
-                            button.classList.add('opacity-50', 'bg-gray-100');
+                    if (isFuture || !isInWeek) {
+                        button.className += ' bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed';
+                        button.disabled = true;
+                    } else if (isSelected) {
+                        button.className += ' bg-gradient-to-br from-blue-500 to-blue-600 border-blue-600 text-white shadow-lg scale-105';
+                        button.disabled = false;
+                        // Add indicator dot
+                        if (!button.querySelector('.absolute.-top-1')) {
+                            const dot = document.createElement('div');
+                            dot.className = 'absolute -top-1 -right-1 w-3 h-3 bg-blue-700 rounded-full';
+                            button.appendChild(dot);
                         }
-                }
-            });
+                    } else if (isToday) {
+                        button.className += ' bg-blue-50 border-blue-300 hover:bg-blue-100';
+                        button.disabled = false;
+                    } else {
+                        button.className += ' bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50';
+                        button.disabled = false;
+                    }
+                    
+                    // Update text color
+                    const textSpan = button.querySelector('span');
+                    if (textSpan) {
+                        if (isSelected) {
+                            textSpan.className = 'text-base font-bold text-white';
+                        } else if (isToday) {
+                            textSpan.className = 'text-base font-bold text-blue-600';
+                        } else {
+                            textSpan.className = 'text-base font-bold text-gray-700';
+                        }
+                    }
+                });
             } catch (error) {
                 console.error('Error updating calendar display:', error);
             }
@@ -594,7 +909,8 @@
                     modal.style.visibility = 'hidden';
                     modal.setAttribute('hidden', 'true');
                 }
-            updateCalendarDisplay();
+                updateCalendarDisplay();
+                updateQuickDateButtons();
             } catch (error) {
                 console.error('Error initializing calendar:', error);
             }

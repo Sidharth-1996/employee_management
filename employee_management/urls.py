@@ -23,7 +23,9 @@ from django.urls import path , include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('employees.urls')),
-    path('admin/', admin.site.urls),
-    path('employees/', include('employees.urls')),  # Include employee app URLs
-    
-]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    path('employees/', include('employees.urls')),
+]
+
+# Serve static files during development
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
