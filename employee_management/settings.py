@@ -3,6 +3,11 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+try:
+    import dj_database_url
+except ImportError:
+    dj_database_url = None
+
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-(waeicg@g@qrxn*&px!ts^w1psq^6$s(luz_*@5@0!fm8**i-_')
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
@@ -21,6 +26,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -50,16 +56,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'employee_management.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.sqlite3'),
-        'NAME': os.environ.get('DB_NAME', BASE_DIR / 'db.sqlite3'),
-        'USER': os.environ.get('DB_USER', ''),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', ''),
-        'PORT': os.environ.get('DB_PORT', ''),
+if dj_database_url:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.sqlite3'),
+            'NAME': os.environ.get('DB_NAME', BASE_DIR / 'db.sqlite3'),
+            'USER': os.environ.get('DB_USER', ''),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', ''),
+            'PORT': os.environ.get('DB_PORT', ''),
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -94,6 +109,8 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ] if (BASE_DIR / "static").exists() else []
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
