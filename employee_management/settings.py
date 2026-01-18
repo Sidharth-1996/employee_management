@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from django.contrib.auth import get_user_model
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -129,3 +130,26 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True'
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+
+
+def create_superuser():
+    username = os.getenv("DJANGO_SUPERUSER_USERNAME")
+    email = os.getenv("DJANGO_SUPERUSER_EMAIL")
+    password = os.getenv("DJANGO_SUPERUSER_PASSWORD")
+
+    if not all([username, email, password]):
+        return
+
+    User = get_user_model()
+    if not User.objects.filter(username=username).exists():
+        User.objects.create_superuser(
+            username=username,
+            email=email,
+            password=password,
+        )
+        print("Superuser created")
+
+try:
+    create_superuser()
+except Exception as e:
+    print("Superuser creation skipped:", e)
