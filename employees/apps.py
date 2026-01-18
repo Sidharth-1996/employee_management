@@ -10,6 +10,8 @@ class EmployeesConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'employees'
 
+    def ready(self):
+        post_migrate.connect(create_superuser, sender=self)
 
 def create_superuser(sender, **kwargs):
     username = os.getenv("DJANGO_SUPERUSER_USERNAME")
