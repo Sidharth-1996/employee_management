@@ -46,7 +46,6 @@ class EmployeeForm(forms.ModelForm):
     def clean_email(self):
         email = self.cleaned_data.get('email')
         if email:
-            # Check if email already exists (excluding current instance)
             queryset = Employee.objects.filter(email=email)
             if self.instance and self.instance.pk:
                 queryset = queryset.exclude(pk=self.instance.pk)
@@ -84,15 +83,11 @@ class AttendanceForm(forms.ModelForm):
         }
     
     def is_weekend(self, date_obj):
-        """Check if date is Saturday (5) or Sunday (6)"""
-        return date_obj.weekday() >= 5  # 5 = Saturday, 6 = Sunday
+        return date_obj.weekday() >= 5
     
     def is_holiday(self, date_obj):
-        """Check if date is a holiday"""
-        # Check for exact date match
         if Holiday.objects.filter(date=date_obj).exists():
             return True
-        # Check for recurring holidays (same month and day, different year)
         if Holiday.objects.filter(is_recurring=True, date__month=date_obj.month, date__day=date_obj.day).exists():
             return True
         return False
@@ -126,7 +121,6 @@ class AttendanceForm(forms.ModelForm):
         date = cleaned_data.get('date')
         
         if employee and date:
-            # Check if attendance already exists for this employee and date
             queryset = Attendance.objects.filter(employee=employee, date=date)
             if self.instance and self.instance.pk:
                 queryset = queryset.exclude(pk=self.instance.pk)
