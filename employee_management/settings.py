@@ -1,5 +1,9 @@
 import os
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -8,7 +12,7 @@ try:
 except ImportError:
     dj_database_url = None
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-(waeicg@g@qrxn*&px!ts^w1psq^6$s(luz_*@5@0!fm8**i-_')
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
