@@ -8,11 +8,17 @@ try:
 except ImportError:
     dj_database_url = None
 
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-dev-key-change-in-production-!@#$%^&*()")
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+# Parse ALLOWED_HOSTS from environment variable, handling empty strings properly
+allowed_hosts_str = os.getenv("ALLOWED_HOSTS", "")
+if allowed_hosts_str:
+    ALLOWED_HOSTS = [host.strip() for host in allowed_hosts_str.split(",") if host.strip()]
+else:
+    # In development (DEBUG=True), allow localhost and 127.0.0.1
+    ALLOWED_HOSTS = ['127.0.0.1', 'localhost'] if DEBUG else []
 
 INSTALLED_APPS = [
     'django.contrib.admin',
